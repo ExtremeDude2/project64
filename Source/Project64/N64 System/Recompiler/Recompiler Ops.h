@@ -327,12 +327,8 @@ protected:
 	}
 
 public:
-<<<<<<< HEAD
-	static DWORD CompilePC ( void )
+	static DWORD CompilePC()
 	{
 		return m_CompilePC;
 	}
-=======
-	static DWORD CompilePC() { return m_CompilePC; }
->>>>>>> c31e3f210c49f962bbc1efb1cef83e79768e8525
 };

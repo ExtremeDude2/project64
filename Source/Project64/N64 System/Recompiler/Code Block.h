@@ -19,91 +19,63 @@ public:
 
 	bool Compile();
 
-<<<<<<< HEAD
-	inline DWORD    VAddrEnter ( void ) const
+	DWORD    VAddrEnter() const
 	{
 		return m_VAddrEnter;
 	}
-	
-	inline DWORD	VAddrFirst ( void ) const
+	DWORD    VAddrFirst() const
 	{
 		return m_VAddrFirst;
 	}
-	
-	inline DWORD	VAddrLast  ( void ) const
+	DWORD    VAddrLast()  const
 	{
 		return m_VAddrLast;
 	}
-	
-	inline BYTE *   CompiledLocation ( void ) const
+	BYTE *   CompiledLocation() const
 	{
 		return m_CompiledLocation;
 	}
-	
-	inline int      NoOfSections ( void ) const
+	int      NoOfSections() const
 	{
 		return m_Sections.size();
 	}
-	
-	inline const CCodeSection & EnterSection ( void ) const
+	const CCodeSection & EnterSection() const
 	{
 		return *m_EnterSection;
 	}
-	
-	inline const MD5Digest & Hash ( void ) const
+	const MD5Digest & Hash() const
 	{
 		return m_Hash;
 	}
 
-	inline void	SetVAddrFirst ( DWORD VAddr )
+	void SetVAddrFirst(DWORD VAddr)
 	{
 		m_VAddrFirst = VAddr;
 	}
-	
-	inline void	SetVAddrLast  ( DWORD VAddr )
+	void SetVAddrLast(DWORD VAddr)
 	{
-		m_VAddrLast  = VAddr;
+		m_VAddrLast = VAddr;
 	}
 
-	CCodeSection * ExistingSection ( DWORD Addr )
+	CCodeSection * ExistingSection(DWORD Addr)
 	{
-		return m_EnterSection->ExistingSection(Addr,NextTest());
+		return m_EnterSection->ExistingSection(Addr, NextTest());
 	}
-	
-	bool SectionAccessible ( DWORD m_SectionID )
+	bool SectionAccessible(DWORD m_SectionID)
 	{
-		return m_EnterSection->SectionAccessible(m_SectionID,NextTest());
+		return m_EnterSection->SectionAccessible(m_SectionID, NextTest());
 	}
 
-	inline QWORD   MemContents(int i) const
+	QWORD   MemContents(int i) const
 	{
 		return m_MemContents[i];
 	}
-	
-	inline QWORD * MemLocation(int i) const
+	QWORD * MemLocation(int i) const
 	{
 		return m_MemLocation[i];
 	}
-=======
-	DWORD    VAddrEnter() const { return m_VAddrEnter; }
-	DWORD    VAddrFirst() const { return m_VAddrFirst; }
-	DWORD    VAddrLast()  const { return m_VAddrLast; }
-	BYTE *   CompiledLocation() const { return m_CompiledLocation; }
-	int      NoOfSections() const { return m_Sections.size(); }
-	const CCodeSection & EnterSection() const { return *m_EnterSection; }
-	const MD5Digest & Hash() const { return m_Hash; }
-
-	void SetVAddrFirst(DWORD VAddr) { m_VAddrFirst = VAddr; }
-	void SetVAddrLast(DWORD VAddr) { m_VAddrLast = VAddr; }
-
-	CCodeSection * ExistingSection(DWORD Addr) { return m_EnterSection->ExistingSection(Addr, NextTest()); }
-	bool SectionAccessible(DWORD m_SectionID) { return m_EnterSection->SectionAccessible(m_SectionID, NextTest()); }
-
-	QWORD   MemContents(int i) const { return m_MemContents[i]; }
-	QWORD * MemLocation(int i) const { return m_MemLocation[i]; }
 
 	DWORD NextTest();
->>>>>>> c31e3f210c49f962bbc1efb1cef83e79768e8525
 
 	EXIT_LIST       m_ExitInfo;
 
