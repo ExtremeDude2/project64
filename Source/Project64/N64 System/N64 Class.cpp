@@ -55,7 +55,7 @@ CN64System::CN64System ( CPlugins * Plugins, bool SavesReadOnly ) :
 	m_Cheats.LoadCheats(!g_Settings->LoadDword(Setting_RememberCheats), Plugins);
 }
 
-CN64System::~CN64System ( void ) 
+CN64System::~CN64System()
 {
 	SetActiveSystem(false);
 	Mempak::Close();
@@ -231,11 +231,11 @@ bool CN64System::RunFileImage ( const char * FileLoc )
 	return true;
 }
 
-void CN64System::CloseSystem ( void ) 
+void CN64System::CloseSystem()
 {
 	if (g_BaseSystem)
 	{
-		g_BaseSystem->CloseCpu(); 
+		g_BaseSystem->CloseCpu();
 		delete g_BaseSystem;
 		g_BaseSystem = NULL;
 	}
@@ -398,7 +398,7 @@ void CN64System::StartEmulationThread (  ThreadInfo * Info )
 	CoUninitialize();
 }
 
-void CN64System::CloseCpu ( void ) 
+void CN64System::CloseCpu()
 {
 	if (m_CPU_Handle == NULL) 
 	{
@@ -461,7 +461,7 @@ void CN64System::DisplayRomInfo ( HWND hParent )
 	Info.DisplayInformation(hParent);
 }
 
-void CN64System::Pause(void)
+void CN64System::Pause()
 {
 	if (m_EndEmulation)
 	{
@@ -490,7 +490,7 @@ stdstr CN64System::ChooseFileToOpen ( HWND hParent )
 
 	openfilename.lStructSize  = sizeof( openfilename );
 	openfilename.hwndOwner    = (HWND)hParent;
-	openfilename.lpstrFilter  = "N64 ROMs (*.zip, *.?64, *.rom, *.usa, *.jap, *.pal, *.bin)\0*.?64;*.zip;*.bin;*.rom;*.usa;*.jap;*.pal\0All files (*.*)\0*.*\0";
+	openfilename.lpstrFilter = "N64 ROMs (*.zip, *.7z, *.?64, *.rom, *.usa, *.jap, *.pal, *.bin)\0*.?64;*.zip;*.7z;*.bin;*.rom;*.usa;*.jap;*.pal\0All files (*.*)\0*.*\0";
 	openfilename.lpstrFile    = FileName;
 	openfilename.lpstrInitialDir    = Directory;
 	openfilename.nMaxFile     = MAX_PATH;
@@ -512,7 +512,7 @@ bool CN64System::IsDialogMsg( MSG * msg )
 	return false;
 }
 
-void CN64System::GameReset (void) 
+void CN64System::GameReset()
 {
 	m_SystemTimer.SetTimer(CSystemTimer::SoftResetTimer,0x3000000,false);
 	m_Plugins->Gfx()->ShowCFB();
@@ -524,7 +524,7 @@ void CN64System::GameReset (void)
 	}
 }
 
-void CN64System::PluginReset ( void )
+void CN64System::PluginReset()
 {
 	if (!m_Plugins->ResetInUiThread(this))
 	{
@@ -880,7 +880,7 @@ void CN64System::InitRegisters( bool bPostPif, CMipsMemory & MMU )
 	}
 }
 
-void CN64System::ExecuteCPU ( void ) 
+void CN64System::ExecuteCPU()
 {
 	//reset code
 	g_Settings->SaveBool(GameRunning_CPU_Running,true);
@@ -911,24 +911,24 @@ void CN64System::ExecuteCPU ( void )
 	}
 }
 
-void CN64System::ExecuteInterpret () 
+void CN64System::ExecuteInterpret()
 {
 	SetActiveSystem();
 	CInterpreterCPU::ExecuteCPU();
 }
 
-void CN64System::ExecuteRecompiler ()
+void CN64System::ExecuteRecompiler()
 {	
 	m_Recomp->Run();
 }
 
-void CN64System::ExecuteSyncCPU () 
+void CN64System::ExecuteSyncCPU()
 {
 	g_Notify->BringToTop();
 	m_Recomp->Run();
 }
 
-void CN64System::CpuStopped ( void ) 
+void CN64System::CpuStopped()
 {
 	g_Settings->SaveBool(GameRunning_CPU_Running,(DWORD)false);
 	g_Notify->WindowMode();
@@ -1376,7 +1376,7 @@ void CN64System::DumpSyncErrors (CN64System * SecondCPU)
 //	AddEvent(CloseCPU);
 }
 
-bool CN64System::SaveState(void) 
+bool CN64System::SaveState()
 {
 	WriteTrace(TraceDebug,__FUNCTION__ ": Start");
 
@@ -1525,7 +1525,7 @@ bool CN64System::SaveState(void)
 	return true;
 }
 
-bool CN64System::LoadState(void) 
+bool CN64System::LoadState()
 {
 	stdstr InstantFileName = g_Settings->LoadString(GameRunning_InstantSaveFile);
 	if (!InstantFileName.empty())
@@ -1595,43 +1595,45 @@ bool CN64System::LoadState(LPCSTR FileName)
 		}
 		DWORD Value;
 		while (port == UNZ_OK) 
-        {
+		{
 			unz_file_info info;
 			char zname[132];
 
 			unzGetCurrentFileInfo(file, &info, zname, 128, NULL,0, NULL,0);
-		    if (unzLocateFile(file, zname, 1) != UNZ_OK ) 
-            {
+			if (unzLocateFile(file, zname, 1) != UNZ_OK ) 
+			{
 				unzClose(file);
 				port = -1;
 				continue;
 			}
 			if( unzOpenCurrentFile(file) != UNZ_OK ) 
-            {
+			{
 				unzClose(file);
 				port = -1;
 				continue;
 			}
 			unzReadCurrentFile(file,&Value,4);
 			if (Value != 0x23D8A6C8 && Value != 0x56D2CD23) 
-            { 
+			{
 				unzCloseCurrentFile(file);
 				port = unzGoToNextFile(file);
 				continue;
 			}
 			if (!LoadedZipFile && Value == 0x23D8A6C8 && port == UNZ_OK) 
-            {
+			{
 				unzReadCurrentFile(file,&SaveRDRAMSize,sizeof(SaveRDRAMSize));
 				//Check header
 
 				BYTE LoadHeader[64];
-				unzReadCurrentFile(file,LoadHeader,0x40);	
+				unzReadCurrentFile(file,LoadHeader,0x40);
 				if (memcmp(LoadHeader,g_Rom->GetRomAddress(),0x40) != 0)
-                {
-					//if (inFullScreen) { return FALSE; }
+				{
+					//if (inFullScreen) { return false; }
 					int result = MessageBoxW(NULL,GS(MSG_SAVE_STATE_HEADER),GS(MSG_MSGBOX_TITLE),
 						MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2);
-					if (result == IDNO) { return FALSE; }
+
+					if (result == IDNO)
+						return false;
 				}
 				Reset(false,true);
 
@@ -1666,8 +1668,8 @@ bool CN64System::LoadState(LPCSTR FileName)
 				continue;
 			}
 			if (LoadedZipFile && Value == 0x56D2CD23 && port == UNZ_OK) 
-            {
-				m_SystemTimer.LoadData(file);			
+			{
+				m_SystemTimer.LoadData(file);
 			}
 			unzCloseCurrentFile(file);
 			port = unzGoToNextFile(file);
@@ -1675,27 +1677,32 @@ bool CN64System::LoadState(LPCSTR FileName)
 		unzClose(file);
 	}
 	if (!LoadedZipFile) 
-    {
+	{
 		HANDLE hSaveFile = CreateFile(FileNameStr.c_str(),GENERIC_WRITE | GENERIC_READ, FILE_SHARE_READ,NULL,
 			OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL | FILE_FLAG_RANDOM_ACCESS, NULL);
 		if (hSaveFile == INVALID_HANDLE_VALUE) 
-        {
-            g_Notify->DisplayMessage(5,L"%s %s",GS(MSG_UNABLED_LOAD_STATE),FileNameStr.ToUTF16().c_str());
+		{
+			g_Notify->DisplayMessage(5,L"%s %s",GS(MSG_UNABLED_LOAD_STATE),FileNameStr.ToUTF16().c_str());
 			return false;
 		}
-		SetFilePointer(hSaveFile,0,NULL,FILE_BEGIN);	
+
+		SetFilePointer(hSaveFile,0,NULL,FILE_BEGIN);
 		ReadFile( hSaveFile,&Value,sizeof(Value),&dwRead,NULL);
-		if (Value != 0x23D8A6C8) { return FALSE; }
-		ReadFile( hSaveFile,&SaveRDRAMSize,sizeof(SaveRDRAMSize),&dwRead,NULL);		
+		if (Value != 0x23D8A6C8)
+			return false;
+
+		ReadFile( hSaveFile,&SaveRDRAMSize,sizeof(SaveRDRAMSize),&dwRead,NULL);
 		//Check header
 		BYTE LoadHeader[64];
-		ReadFile( hSaveFile,LoadHeader,0x40,&dwRead,NULL);	
+		ReadFile( hSaveFile,LoadHeader,0x40,&dwRead,NULL);
 		if (memcmp(LoadHeader,g_Rom->GetRomAddress(),0x40) != 0)
-        {
-			//if (inFullScreen) { return FALSE; }
+		{
+			//if (inFullScreen) { return false; }
 			int result = MessageBoxW(NULL,GS(MSG_SAVE_STATE_HEADER),GS(MSG_MSGBOX_TITLE),
 				MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2);
-			if (result == IDNO) { return FALSE; }
+
+			if (result == IDNO)
+				return false;
 		}
 		Reset(false,true);
 		m_MMU_VM.UnProtectMemory(0x80000000,0x80000000 + g_Settings->LoadDword(Game_RDRamSize) - 4);
@@ -1737,7 +1744,7 @@ bool CN64System::LoadState(LPCSTR FileName)
 	
 	//Fix Random Register
 	while ((int)m_Reg.RANDOM_REGISTER < (int)m_Reg.WIRED_REGISTER)
-    {
+	{
 		m_Reg.RANDOM_REGISTER += 32 - m_Reg.WIRED_REGISTER;
 	}
 	//Fix up timer
@@ -1767,7 +1774,7 @@ bool CN64System::LoadState(LPCSTR FileName)
 	if (bFastSP() && m_Recomp) { m_Recomp->ResetMemoryStackPos(); }
 
 	if (g_Settings->LoadDword(Game_CpuType) == CPU_SyncCores) 
-    {
+	{
 		if (m_SyncCPU)
 		{
 			for (int i = 0; i < (sizeof(m_LastSuccessSyncPC)/sizeof(m_LastSuccessSyncPC[0])); i++) 
@@ -1782,12 +1789,12 @@ bool CN64System::LoadState(LPCSTR FileName)
 	}
 	WriteTrace(TraceDebug,__FUNCTION__ ": 13");
 	std::wstring LoadMsg = g_Lang->GetString(MSG_LOADED_STATE);
-    g_Notify->DisplayMessage(5,L"%s %s",LoadMsg.c_str(),CPath(FileNameStr).GetNameExtension().ToUTF16().c_str());
+	g_Notify->DisplayMessage(5,L"%s %s",LoadMsg.c_str(),CPath(FileNameStr).GetNameExtension().ToUTF16().c_str());
 	WriteTrace(TraceDebug,__FUNCTION__ ": Done");
 	return true;
 }
 
-void CN64System::RunRSP ( void ) 
+void CN64System::RunRSP()
 {
 	WriteTraceF(TraceRSP, __FUNCTION__ ": Start (SP Status %X)",m_Reg.SP_STATUS_REG);
 	if ( ( m_Reg.SP_STATUS_REG & SP_STATUS_HALT ) == 0) 
@@ -1877,7 +1884,7 @@ void CN64System::RunRSP ( void )
 	WriteTraceF(TraceRSP, __FUNCTION__ ": Done (SP Status %X)",m_Reg.SP_STATUS_REG);
 }
 
-void CN64System::SyncToAudio ( void ) 
+void CN64System::SyncToAudio()
 {
 	if (!bSyncToAudio() || !bLimitFPS())
 	{
@@ -1902,7 +1909,7 @@ void CN64System::SyncToAudio ( void )
 	}
 }
 
-void CN64System::RefreshScreen ( void ) 
+void CN64System::RefreshScreen()
 {
 	SPECIAL_TIMERS CPU_UsageAddr = Timer_None/*, ProfilingAddr = Timer_None*/;
 	DWORD VI_INTR_TIME = 500000;
@@ -2028,7 +2035,7 @@ void CN64System::TLB_Unmaped ( DWORD VAddr, DWORD Len )
 	}
 }
 
-void CN64System::TLB_Changed   ( void )
+void CN64System::TLB_Changed()
 {
 	Debug_RefreshTLBWindow();
 }

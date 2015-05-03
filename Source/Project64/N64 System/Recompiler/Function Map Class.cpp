@@ -49,7 +49,7 @@ bool CFunctionMap::AllocateMemory()
 	return true;
 }
 
-void CFunctionMap::CleanBuffers  ( void )
+void CFunctionMap::CleanBuffers()
 {
 	if (m_FunctionTable)
 	{

@@ -20,7 +20,7 @@ CTLB::CTLB(CTLB_CB * CallBack ):
 	WriteTrace(TraceTLB,__FUNCTION__ ": Done");
 }
 
-CTLB::~CTLB (void)
+CTLB::~CTLB()
 {
 	WriteTrace(TraceTLB,__FUNCTION__ ": Start");
 	WriteTrace(TraceTLB,__FUNCTION__ ": Done");
@@ -72,7 +72,7 @@ bool CTLB::AddressDefined ( DWORD VAddr)
 	return false;
 }
 
-void CTLB::Probe (void)
+void CTLB::Probe()
 {
 	int Counter;
 	
@@ -106,7 +106,8 @@ void CTLB::Probe (void)
 	WriteTrace(TraceTLB,__FUNCTION__ ": Done");
 }
 
-void CTLB::ReadEntry (void) {
+void CTLB::ReadEntry()
+{
 	DWORD index = g_Reg->INDEX_REGISTER & 0x1F;
 
 	g_Reg->PAGE_MASK_REGISTER = m_tlb[index].PageMask.Value ;
@@ -201,7 +202,7 @@ void CTLB::SetupTLB_Entry (int index, bool Random)
 	m_FastTlb[FastIndx].VALID = m_tlb[index].EntryLo0.V;
 	m_FastTlb[FastIndx].DIRTY = m_tlb[index].EntryLo0.D; 
 	m_FastTlb[FastIndx].GLOBAL = m_tlb[index].EntryLo0.GLOBAL & m_tlb[index].EntryLo1.GLOBAL;
-	m_FastTlb[FastIndx].ValidEntry = FALSE;
+	m_FastTlb[FastIndx].ValidEntry = false;
 	m_FastTlb[FastIndx].Random = Random;
 	m_FastTlb[FastIndx].Probed = false;
 
@@ -219,7 +220,7 @@ void CTLB::SetupTLB_Entry (int index, bool Random)
 	m_FastTlb[FastIndx].VALID = m_tlb[index].EntryLo1.V;
 	m_FastTlb[FastIndx].DIRTY = m_tlb[index].EntryLo1.D; 
 	m_FastTlb[FastIndx].GLOBAL = m_tlb[index].EntryLo0.GLOBAL & m_tlb[index].EntryLo1.GLOBAL;
-	m_FastTlb[FastIndx].ValidEntry = FALSE;
+	m_FastTlb[FastIndx].ValidEntry = false;
 	m_FastTlb[FastIndx].Random = Random;
 	m_FastTlb[FastIndx].Probed = false;
 

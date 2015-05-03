@@ -10,7 +10,7 @@
 ****************************************************************************/
 #include "stdafx.h"
 
-CN64Rom::CN64Rom ( void ) 
+CN64Rom::CN64Rom()
 {
 	m_hRomFile        = NULL;
 	m_hRomFileMapping = NULL;
@@ -23,7 +23,8 @@ CN64Rom::CN64Rom ( void )
 	m_CicChip         = CIC_UNKNOWN;
 }
 
-CN64Rom::~CN64Rom ( void ) {
+CN64Rom::~CN64Rom()
+{
 	UnallocateRomImage();
 }
 
@@ -100,16 +101,17 @@ bool CN64Rom::AllocateAndLoadN64Image ( const char * FileLoc, bool LoadBootCodeO
 	return true;
 }
 
-bool CN64Rom::AllocateAndLoadZipImage ( const char * FileLoc, bool LoadBootCodeOnly ) {
+bool CN64Rom::AllocateAndLoadZipImage(const char * FileLoc, bool LoadBootCodeOnly) {
 	unzFile file = unzOpen(FileLoc);
-	if (file == NULL) { return false; }
+	if (file == NULL)
+		return false;
 
 	int port = unzGoToFirstFile(file);
-	bool FoundRom = FALSE; 
+	bool FoundRom = false; 
 	
 	//scan through all files in zip to a suitable file is found
-	while(port == UNZ_OK && FoundRom == FALSE) {
-	    unz_file_info info;
+	while(port == UNZ_OK && !FoundRom) {
+		unz_file_info info;
 		char zname[_MAX_PATH];
 
 		unzGetCurrentFileInfo(file, &info, zname, sizeof(zname), NULL,0, NULL,0);
@@ -184,16 +186,16 @@ bool CN64Rom::AllocateAndLoadZipImage ( const char * FileLoc, bool LoadBootCodeO
 			g_Notify->DisplayMessage(1,L"");
 		}
 		unzCloseCurrentFile(file);
-		if (FoundRom == FALSE) {
+
+		if (!FoundRom)
 			port = unzGoToNextFile(file);
-		}
 	}
 	unzClose(file);
 	
 	return FoundRom;
 }
 
-void CN64Rom::ByteSwapRom (void) {
+void CN64Rom::ByteSwapRom() {
 	DWORD count;
 
 	switch (*((DWORD *)&m_ROMImage[0])) {
@@ -201,20 +203,20 @@ void CN64Rom::ByteSwapRom (void) {
 		for( count = 0 ; count < m_RomFileSize; count += 4 ) {
 			m_ROMImage[count] ^= m_ROMImage[count+2];
 			m_ROMImage[count + 2] ^= m_ROMImage[count];
-			m_ROMImage[count] ^= m_ROMImage[count+2];			
+			m_ROMImage[count] ^= m_ROMImage[count+2];
 			m_ROMImage[count + 1] ^= m_ROMImage[count + 3];
 			m_ROMImage[count + 3] ^= m_ROMImage[count + 1];
-			m_ROMImage[count + 1] ^= m_ROMImage[count + 3];			
+			m_ROMImage[count + 1] ^= m_ROMImage[count + 3];
 		}
 		break;
 	case 0x40123780:
 		for( count = 0 ; count < m_RomFileSize; count += 4 ) {
 			m_ROMImage[count] ^= m_ROMImage[count+3];
 			m_ROMImage[count + 3] ^= m_ROMImage[count];
-			m_ROMImage[count] ^= m_ROMImage[count+3];			
+			m_ROMImage[count] ^= m_ROMImage[count+3];
 			m_ROMImage[count + 1] ^= m_ROMImage[count + 2];
 			m_ROMImage[count + 2] ^= m_ROMImage[count + 1];
-			m_ROMImage[count + 1] ^= m_ROMImage[count + 2];			
+			m_ROMImage[count + 1] ^= m_ROMImage[count + 2];
 		}
 		break;
 	case 0x80371240: break;
@@ -223,7 +225,7 @@ void CN64Rom::ByteSwapRom (void) {
 	}
 }
 
-void CN64Rom::CalculateCicChip ( void )
+void CN64Rom::CalculateCicChip()
 {
 	__int64 CRC = 0;
 	
@@ -251,7 +253,8 @@ void CN64Rom::CalculateCicChip ( void )
 
 }
 
-CICChip CN64Rom::CicChipID ( void ) {
+CICChip CN64Rom::CicChipID()
+{
 	return m_CicChip;
 }
 
@@ -274,7 +277,8 @@ bool CN64Rom::LoadN64Image ( const char * FileLoc, bool LoadBootCodeOnly ) {
 	char drive[_MAX_DRIVE], dir[_MAX_DIR], fname[_MAX_FNAME], ext[_MAX_EXT];
 	_splitpath(FileLoc,drive,dir,fname,ext);
 	bool Loaded7zFile = false;
-	if (strstr(FileLoc,"?") != NULL || strcmp(ext,".z7") == 0)
+
+	if (strstr(FileLoc,"?") != NULL || strcmp(ext,".7z") == 0)
 	{
 		char FullPath[MAX_PATH + 100];
 		strcpy(FullPath,FileLoc);
@@ -285,7 +289,7 @@ bool CN64Rom::LoadN64Image ( const char * FileLoc, bool LoadBootCodeOnly ) {
 		{
 			//Pop up a dialog and select file
 			//allocate memory for sub name and copy selected file name to var
-			return false; //remove once dialog is done
+			//return false; //remove once dialog is done
 		} else {
 			*SubFile = '\0';
 			SubFile += 1;
@@ -300,11 +304,15 @@ bool CN64Rom::LoadN64Image ( const char * FileLoc, bool LoadBootCodeOnly ) {
 			{
 				continue;
 			}
+
 			stdstr ZipFileName;
 			ZipFileName.FromUTF16(ZipFile.FileNameIndex(i).c_str());
-			if (_stricmp(ZipFileName.c_str(), SubFile) != 0)
+			if (SubFile != NULL)
 			{
-				continue;
+				if (_stricmp(ZipFileName.c_str(), SubFile) != 0)
+				{
+					continue;
+				}
 			}
 
 			//Get the size of the rom and try to allocate the memory needed.
@@ -483,17 +491,19 @@ void CN64Rom::SaveRomSettingID ( bool temp )
 	}
 }
 
-void CN64Rom::ClearRomSettingID ( void ) 
+void CN64Rom::ClearRomSettingID()
 {
 	g_Settings->SaveString(Game_GameName,"");
 	g_Settings->SaveString(Game_IniKey,"");
 }
 
-void CN64Rom::SetError ( LanguageStringID ErrorMsg ) {
+void CN64Rom::SetError(LanguageStringID ErrorMsg)
+{
 	m_ErrorMsg = ErrorMsg;
 }
 
-void CN64Rom::UnallocateRomImage ( void ) {
+void CN64Rom::UnallocateRomImage()
+{
 	if (m_hRomFileMapping) {
 		UnmapViewOfFile (m_ROMImage);
         CloseHandle(m_hRomFileMapping);

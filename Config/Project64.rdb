@@ -1515,6 +1515,13 @@ Status=Compatible
 Counter Factor=3
 RDRAM Size=8
 
+[D52FE29D-8EA6A759-C:0]
+Counter Factor=1
+Good Name=Donchan Puzzle Hanabi de Doon! (J) [ALECK64]
+Status=Compatible
+RDRAM Size=8
+Save Type=4kbit Eeprom
+
 [11936D8C-6F2C4B43-C:50]
 Good Name=Donkey Kong 64 (E)
 Internal Name=DONKEY KONG 64
@@ -1741,6 +1748,13 @@ Good Name=Eikou no Saint Andrews (J)
 Internal Name=´²º³É¾ÝÄ±ÝÄÞØ­°½
 Status=Issues (plugin)
 Plugin Note=[video] errors:sky,various (see GameFAQ)
+
+[6D9D1FE4-84D10BEA-C:4A]
+Counter Factor=1
+Good Name=Eleven Beat - World Tournament (J) [ALECK64]
+Status=Compatible
+RDRAM Size=8
+Save Type=4kbit Eeprom
 
 [F2A653CB-60633B3B-C:45]
 Good Name=Elmo's Letter Adventure (U)
@@ -2348,6 +2362,13 @@ AiCountPerBytes=200
 Counter Factor=1
 Delay SI=Yes
 RDRAM Size=8
+
+[B57D4EB4-345E09E5-C:0]
+Counter Factor=1
+Good Name=Guru - Kuru Kuru Fever (J) [ALECK64]
+Status=Compatible
+RDRAM Size=8
+Save Type=4kbit Eeprom
 
 //================  H  ================
 [95A80114-E0B72A7F-C:4A]
@@ -3258,6 +3279,13 @@ Internal Name=MAGICAL TETRIS
 Status=Compatible
 AiCountPerBytes=200
 
+[D5356BAC-97AE69D2-C:4A]
+Counter Factor=1
+Good Name=Magical Tetris Challenge Featuring Mickey (J) [ALECK64]
+Status=Compatible
+RDRAM Size=8
+Save Type=4kbit Eeprom
+
 [C53EDC41-ECE19359-C:4A]
 Good Name=Mahjong 64 (J)
 Internal Name=MAHJONG64
@@ -3963,12 +3991,18 @@ RDRAM Size=8
 [4B629EF4-99B21D9B-C:50]
 Good Name=NFL Quarterback Club 98 (E)
 Internal Name=quarterback_club_98
-Status=Unsupported
+Status=Compatible
+Plugin Note=[video] HLE not supported
+32bit=No
+HLE GFX=No
 
 [D89BE2F8-99C97ADF-C:45]
 Good Name=NFL Quarterback Club 98 (U)
 Internal Name=quarterback_club_98
-Status=Unsupported
+Status=Compatible
+Plugin Note=[video] HLE not supported
+32bit=No
+HLE GFX=No
 
 [52A3CF47-4EC13BFC-C:50]
 Good Name=NFL Quarterback Club 99 (E)
@@ -5189,11 +5223,12 @@ Status=Compatible
 [EF703CA4-4D4A9AC9-C:4A]
 Good Name=Shin Nihon Pro Wrestling Toukon Road - Brave Spirits (J)
 Internal Name=TOUKON ROAD
-Status=Uncertain
-Core Note=input problem?
-Plugin Note=[video] HLE not supported
-HLE GFX=No
+Status=Issues (plugin)
+Core Note=high system requirement
+Plugin Note=[video] HLE not supported; flicker
 RDRAM Size=8
+Delay SI=Yes
+HLE GFX=No
 
 [551C7F43-9149831C-C:4A]
 Good Name=Shin Nihon Pro Wrestling Toukon Road 2 - The Next Generation (J)
@@ -5391,6 +5426,13 @@ Linking=Off
 Good Name=Star Soldier - Vanishing Earth (J)
 Internal Name=STAR SOLDIER
 Status=Compatible
+
+[315C7466-3A453265-C:4A]
+Counter Factor=1
+Good Name=Star Soldier - Vanishing Earth (J) [ALECK64]
+Status=Compatible
+RDRAM Size=8
+Save Type=4kbit Eeprom
 
 [DDD93C85-DAE381E8-C:45]
 Good Name=Star Soldier - Vanishing Earth (U)
@@ -6372,6 +6414,13 @@ Status=Compatible
 Core Note=timing (see GameFAQ)
 Plugin Note=[video] errors:resolution; use 1.6 plugin
 
+[90AF8D2C-E1AC1B37-C:0]
+Counter Factor=1
+Good Name=Tower & Shaft (J) [ALECK64]
+Status=Unsupported
+RDRAM Size=8
+Save Type=4kbit Eeprom
+
 [CCEB3858-26952D97-C:50]
 Good Name=Toy Story 2 (E)
 Internal Name=Toy Story 2
@@ -6753,6 +6802,14 @@ Internal Name=ÊÞ°Á¬Ù ÌßÛÚ½ØÝ¸Þ 64
 Status=Issues (core)
 Plugin Note=[video] flicker
 Clear Frame=1
+
+[2F57C9F7-F1E29CA6-C:4A]
+Good Name=Vivid Dolls (J) [ALECK64]
+Status=Compatible
+Core Note=LLE may be required on some GFX plugins
+Counter Factor=1
+RDRAM Size=8
+Save Type=4kbit Eeprom
 
 //================  W  ================
 [93053075-261E0F43-C:50]

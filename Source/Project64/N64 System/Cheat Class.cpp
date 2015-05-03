@@ -15,21 +15,6 @@
 enum { WM_EDITCHEAT           = WM_USER + 0x120 };
 enum { UM_CHANGECODEEXTENSION = WM_USER + 0x121 };
 
-static int is_valid_hex_digit(char symbol)
-{
-    if (symbol <  '0')
-        return 0; /* no valid hex figures before '0' */
-    if (symbol <= '9')
-        return 1;
-
-    symbol &= ~('X' ^ 'x'); /* in ASCII, forces lowercase to uppercase */
-    if (symbol <  'A')
-        return 0;
-    if (symbol <= 'F')
-        return 1;
-    return 0;
-}
-
 CCheats::CCheats (const CN64Rom * Rom ) :
 	m_Rom(Rom),
 	m_rcList(new RECT),
@@ -44,7 +29,8 @@ CCheats::CCheats (const CN64Rom * Rom ) :
 	m_hCheatTree   = NULL;
 }
 
-CCheats::~CCheats(void) {
+CCheats::~CCheats()
+{
 	delete m_rcList;
 	delete m_rcAdd;
 }
@@ -233,7 +219,7 @@ void CCheats::ApplyCheats(CMipsMemory * MMU)
 		const CODES & CodeEntry = m_Codes[CurrentCheat];
 		for (size_t CurrentEntry = 0; CurrentEntry < CodeEntry.size();)
 		{
-			CurrentEntry += ApplyCheatEntry(MMU, CodeEntry,CurrentEntry,TRUE);
+			CurrentEntry += ApplyCheatEntry(MMU, CodeEntry,CurrentEntry, true);
 		}
 	}
 }
@@ -349,7 +335,7 @@ bool CCheats::IsValid16BitCode (LPCSTR CheatString) const
 	return true;
 }
 
-int CCheats::ApplyCheatEntry (CMipsMemory * MMU, const CODES & CodeEntry, int CurrentEntry, BOOL Execute )
+int CCheats::ApplyCheatEntry (CMipsMemory * MMU, const CODES & CodeEntry, int CurrentEntry, bool Execute )
 {
 	if (CurrentEntry < 0 || CurrentEntry >= (int)CodeEntry.size())
 	{
@@ -419,22 +405,22 @@ int CCheats::ApplyCheatEntry (CMipsMemory * MMU, const CODES & CodeEntry, int Cu
 	case 0xD0000000:													// Added by Witten (witten@pj64cheats.net)
 		Address = 0x80000000 | (Code.Command & 0xFFFFFF);
 		MMU->LB_VAddr(Address,bMemory);
-		if (bMemory != Code.Value) { Execute = FALSE; }
+		if (bMemory != Code.Value) { Execute = false; }
 		return ApplyCheatEntry(MMU,CodeEntry,CurrentEntry + 1,Execute) + 1;
 	case 0xD1000000:													// Added by Witten (witten@pj64cheats.net)
 		Address = 0x80000000 | (Code.Command & 0xFFFFFF);
 		MMU->LH_VAddr(Address,wMemory);
-		if (wMemory != Code.Value) { Execute = FALSE; }
+		if (wMemory != Code.Value) { Execute = false; }
 		return ApplyCheatEntry(MMU,CodeEntry,CurrentEntry + 1,Execute) + 1;
 	case 0xD2000000:													// Added by Witten (witten@pj64cheats.net)
 		Address = 0x80000000 | (Code.Command & 0xFFFFFF);
 		MMU->LB_VAddr(Address,bMemory);
-		if (bMemory == Code.Value) { Execute = FALSE; }
+		if (bMemory == Code.Value) { Execute = false; }
 		return ApplyCheatEntry(MMU,CodeEntry,CurrentEntry + 1,Execute) + 1;
 	case 0xD3000000:													// Added by Witten (witten@pj64cheats.net)
 		Address = 0x80000000 | (Code.Command & 0xFFFFFF);
 		MMU->LH_VAddr(Address,wMemory);
-		if (wMemory == Code.Value) { Execute = FALSE; }
+		if (wMemory == Code.Value) { Execute = false; }
 		return ApplyCheatEntry(MMU,CodeEntry,CurrentEntry + 1,Execute) + 1;
 
 	// Xplorer64 (Author: Witten)
@@ -469,22 +455,22 @@ int CCheats::ApplyCheatEntry (CMipsMemory * MMU, const CODES & CodeEntry, int Cu
 	case 0xB8000000:
 		Address = 0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF);
 		MMU->LB_VAddr(Address,bMemory);
-		if (bMemory != ConvertXP64Value(Code.Value)) { Execute = FALSE; }
+		if (bMemory != ConvertXP64Value(Code.Value)) { Execute = false; }
 		return ApplyCheatEntry(MMU,CodeEntry,CurrentEntry + 1,Execute) + 1;
 	case 0xB9000000:
 		Address = 0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF);
 		MMU->LH_VAddr(Address,wMemory);
-		if (wMemory != ConvertXP64Value(Code.Value)) { Execute = FALSE; }
+		if (wMemory != ConvertXP64Value(Code.Value)) { Execute = false; }
 		return ApplyCheatEntry(MMU,CodeEntry,CurrentEntry + 1,Execute) + 1;
 	case 0xBA000000:
 		Address = 0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF);
 		MMU->LB_VAddr(Address,bMemory);
-		if (bMemory == ConvertXP64Value(Code.Value)) { Execute = FALSE; }
+		if (bMemory == ConvertXP64Value(Code.Value)) { Execute = false; }
 		return ApplyCheatEntry(MMU,CodeEntry,CurrentEntry + 1,Execute) + 1;
 	case 0xBB000000:
 		Address = 0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF);
 		MMU->LH_VAddr(Address,wMemory);
-		if (wMemory == ConvertXP64Value(Code.Value)) { Execute = FALSE; }
+		if (wMemory == ConvertXP64Value(Code.Value)) { Execute = false; }
 		return ApplyCheatEntry(MMU,CodeEntry,CurrentEntry + 1,Execute) + 1;
 	case 0: return MaxGSEntries; break;
 	}
@@ -628,7 +614,7 @@ bool CCheats::CheatUsesCodeExtensions (const stdstr &LineEntry) {
 	return CodeExtension;
 }
 
-void CCheats::RefreshCheatManager(void) 
+void CCheats::RefreshCheatManager() 
 {
 	if (m_Window == NULL) { return; }
 	
@@ -1786,7 +1772,7 @@ stdstr CCheats::ReadCodeString (HWND hDlg, bool &validcodes, bool &validoptions,
 		if (len <= 0) { continue; }
 
 		for (i=0; i<128; i++) {
-			if (is_valid_hex_digit(str[i])) {
+			if (isxdigit(str[i])) {
 				tempformat[i] = 'X';
 			}
 			if ((str[i] == ' ') || (str[i] == '?')) {
@@ -1860,7 +1846,7 @@ stdstr CCheats::ReadOptionsString(HWND hDlg, bool &/*validcodes*/, bool &validop
 			case 1: //option = lower byte
 				if (len >= 2) {
 					for (i=0; i<2; i++) {
-						if (!is_valid_hex_digit(str[i])) {
+						if (!isxdigit(str[i])) {
 							validoptions = false;
 							break;
 						}
@@ -1893,7 +1879,7 @@ stdstr CCheats::ReadOptionsString(HWND hDlg, bool &/*validcodes*/, bool &validop
 			case 2: //option = word
 				if (len >= 4) {
 					for (i=0; i<4; i++) {
-						if (!is_valid_hex_digit(str[i])) {
+						if (!isxdigit(str[i])) {
 							validoptions = false;
 							break;
 						}

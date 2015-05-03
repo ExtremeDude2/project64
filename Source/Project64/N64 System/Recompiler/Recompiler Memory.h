@@ -17,6 +17,7 @@ protected:
 	CRecompMemory();
 	~CRecompMemory();
 
+<<<<<<< HEAD
 	bool AllocateMemory ( void );
 	void CheckRecompMem ( void );
 	void Reset          ( void );
@@ -26,11 +27,19 @@ protected:
 	{
 		return m_RecompPos;
 	}
+=======
+	bool AllocateMemory();
+	void CheckRecompMem();
+	void Reset();
+	void ShowMemUsed();
+
+	BYTE* RecompPos() const { return m_RecompPos; }
+>>>>>>> c31e3f210c49f962bbc1efb1cef83e79768e8525
 
 private:
 	BYTE          * m_RecompCode;
 	DWORD           m_RecompSize;
-	
+
 	enum { MaxCompileBufferSize      = 0x03C00000 };
 	enum { InitialCompileBufferSize  = 0x00500000 };
 	enum { IncreaseCompileBufferSize = 0x00100000 };

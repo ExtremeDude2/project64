@@ -13,14 +13,15 @@
 class CCompiledFunc
 {
 	//constructor
-	CCompiledFunc ( void ); // not implemented
+	CCompiledFunc(); // not implemented
 
 public:
-	CCompiledFunc ( const CCodeBlock & CodeBlock );
+	CCompiledFunc(const CCodeBlock & CodeBlock);
 
-	typedef void (* Func)(void);
+	typedef void (*Func)();
 
 	//Get Private Information
+<<<<<<< HEAD
 	inline const DWORD  EnterPC   ( void ) const
 	{
 		return m_EnterPC;
@@ -65,18 +66,31 @@ public:
 	{
 		return m_MemLocation[i];
 	}
+=======
+	const DWORD  EnterPC   () const { return m_EnterPC; }
+	const DWORD  MinPC     () const { return m_MinPC; }
+	const DWORD  MaxPC     () const { return m_MaxPC; }
+	const Func   Function  () const { return m_Function; }
+	const MD5Digest&  Hash () const { return m_Hash; }
+
+	CCompiledFunc*    Next () const { return m_Next; }
+	void SetNext(CCompiledFunc* Next) { m_Next = Next; }
+
+	QWORD MemContents(int i) { return m_MemContents[i]; }
+	QWORD* MemLocation(int i) { return m_MemLocation[i]; }
+>>>>>>> c31e3f210c49f962bbc1efb1cef83e79768e8525
 
 private:
 	//Information
-	DWORD m_EnterPC;		// The Entry PC
-	DWORD m_MinPC;			// The Lowest PC in the function
-	DWORD m_MaxPC;			// The Highest PC in the function
+	DWORD m_EnterPC; // The Entry PC
+	DWORD m_MinPC;   // The Lowest PC in the function
+	DWORD m_MaxPC;   // The Highest PC in the function
 
 	MD5Digest m_Hash;
 	//From querying the recompiler get information about the function
 	Func  m_Function;
 
-	CCompiledFunc * m_Next;
+	CCompiledFunc* m_Next;
 	
 	//Validation
 	QWORD m_MemContents[2], * m_MemLocation[2];

@@ -97,7 +97,6 @@ int CRomBrowser::CalcSortPosition (DWORD lParam)
 		return 0;
 	}
 
-
 	for (int SortIndex = NoOfSortKeys; SortIndex >= 0; SortIndex --) 
 	{
 		stdstr SortFieldName = g_Settings->LoadStringIndex(RomBrowser_SortFieldIndex,SortIndex);
@@ -751,6 +750,9 @@ void CRomBrowser::FillRomList ( strlist & FileList, const CPath & BaseDirectory,
 						RomInfo.InternalName[count + 2] ^= RomInfo.InternalName[count + 1];
 						RomInfo.InternalName[count + 1] ^= RomInfo.InternalName[count + 2];			
 					}
+
+					RomInfo.RomSize = (int)f->Size;
+
 					WriteTrace(TraceDebug,__FUNCTION__ ": 15");
 					RomInfo.InternalName[21] = '\0';
 					RomInfo.CartID[0] = *(RomData + 0x3F);
@@ -858,7 +860,7 @@ bool CRomBrowser::LoadDataFromRomFile(char * FileName,BYTE * Data,int DataLen, i
 	BYTE Test[4];
 
 	if (_strnicmp(&FileName[strlen(FileName)-4], ".ZIP",4) == 0 )
-	{ 
+	{
 		int len, port = 0, FoundRom;
 	    unz_file_info info;
 		char zname[132];
@@ -1200,16 +1202,15 @@ bool CRomBrowser::RomListDrawItem(int idCtrl, DWORD lParam)
 	RECT rcItem, rcDraw;
 	char String[300];
 	LV_ITEM lvItem;
-	BOOL bSelected;
 	HBRUSH hBrush;
-    LV_COLUMN lvc; 
+	LV_COLUMN lvc; 
 	int nColumn;
 
 	lvItem.mask = LVIF_PARAM;
 	lvItem.iItem = ditem->itemID;
 	if (!ListView_GetItem((HWND)m_hRomList, &lvItem)) { return false; }
 	lvItem.state = ListView_GetItemState((HWND)m_hRomList, ditem->itemID, -1);
-	bSelected = (lvItem.state & LVIS_SELECTED);
+	bool bSelected = (lvItem.state & LVIS_SELECTED) != 0;
 
 	if (lvItem.lParam < 0 || lvItem.lParam >= (LPARAM)m_RomInfo.size())
 	{
@@ -1244,7 +1245,7 @@ bool CRomBrowser::RomListDrawItem(int idCtrl, DWORD lParam)
 		text = GS(RB_NOT_GOOD_FILE);
 	}
 
-	DrawTextW(ditem->hDC, text.c_str(), text.length(), &rcDraw, DT_LEFT | DT_SINGLELINE | DT_NOPREFIX | DT_VCENTER);	
+	DrawTextW(ditem->hDC, text.c_str(), text.length(), &rcDraw, DT_LEFT | DT_SINGLELINE | DT_NOPREFIX | DT_VCENTER | DT_WORD_ELLIPSIS);
 	
     memset(&lvc,0,sizeof(lvc));
 	lvc.mask = LVCF_FMT | LVCF_WIDTH; 
@@ -1256,7 +1257,12 @@ bool CRomBrowser::RomListDrawItem(int idCtrl, DWORD lParam)
 		ListView_GetItemText((HWND)m_hRomList,ditem->itemID, nColumn, String, sizeof(String)); 
 		memcpy(&rcDraw,&rcItem,sizeof(RECT));
 		rcDraw.right -= 3;
-		DrawText(ditem->hDC, String, strlen(String), &rcDraw, DT_LEFT | DT_SINGLELINE | DT_NOPREFIX | DT_VCENTER);
+		std::wstring text = stdstr(String).ToUTF16();
+		if (wcscmp(L"#340#", text.c_str()) == 0)
+		{
+			text = GS(RB_NOT_GOOD_FILE);
+		}
+		DrawTextW(ditem->hDC, text.c_str(), text.length(), &rcDraw, DT_LEFT | DT_SINGLELINE | DT_NOPREFIX | DT_VCENTER | DT_WORD_ELLIPSIS);
 	}
 	return true;
 }

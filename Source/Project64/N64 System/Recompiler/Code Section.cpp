@@ -10,10 +10,11 @@
 ****************************************************************************/
 #include "stdafx.h"
 
-void InPermLoop         ( void );
+void InPermLoop();
 
-bool DelaySlotEffectsCompare ( DWORD PC, DWORD Reg1, DWORD Reg2 );
+bool DelaySlotEffectsCompare(DWORD PC, DWORD Reg1, DWORD Reg2);
 
+<<<<<<< HEAD
 int DelaySlotEffectsJump (DWORD JumpPC)
 {
 	OPCODE Command;
@@ -22,13 +23,25 @@ int DelaySlotEffectsJump (DWORD JumpPC)
 	{
 		return TRUE;
 	}
+=======
+static bool DelaySlotEffectsJump(DWORD JumpPC) {
+	OPCODE Command;
+
+	if (!g_MMU->LW_VAddr(JumpPC, Command.Hex))
+		return true;
+>>>>>>> c31e3f210c49f962bbc1efb1cef83e79768e8525
 
 	switch (Command.op)
 	{
 	case R4300i_SPECIAL:
+<<<<<<< HEAD
 		switch (Command.funct)
 		{
 		case R4300i_SPECIAL_JR:	return DelaySlotEffectsCompare(JumpPC,Command.rs,0);
+=======
+		switch (Command.funct) {
+		case R4300i_SPECIAL_JR: return DelaySlotEffectsCompare(JumpPC,Command.rs,0);
+>>>>>>> c31e3f210c49f962bbc1efb1cef83e79768e8525
 		case R4300i_SPECIAL_JALR: return DelaySlotEffectsCompare(JumpPC,Command.rs,31);
 		}
 		break;
@@ -46,7 +59,7 @@ int DelaySlotEffectsJump (DWORD JumpPC)
 		break;
 	case R4300i_JAL: 
 	case R4300i_SPECIAL_JALR: return DelaySlotEffectsCompare(JumpPC,31,0); break;
-	case R4300i_J: return FALSE;
+	case R4300i_J: return false;
 	case R4300i_BEQ: 
 	case R4300i_BNE: 
 	case R4300i_BLEZ: 
@@ -63,9 +76,10 @@ int DelaySlotEffectsJump (DWORD JumpPC)
 			case R4300i_COP1_BC_BCFL:
 			case R4300i_COP1_BC_BCTL:
 				{
-					int EffectDelaySlot;
+					bool EffectDelaySlot = false;
 					OPCODE NewCommand;
 
+<<<<<<< HEAD
 					if (!g_MMU->LW_VAddr(JumpPC + 4, NewCommand.Hex))
 					{
 						return TRUE;
@@ -82,6 +96,19 @@ int DelaySlotEffectsJump (DWORD JumpPC)
 						{
 							EffectDelaySlot = TRUE;
 						} 
+=======
+					if (!g_MMU->LW_VAddr(JumpPC + 4, NewCommand.Hex)) {
+						return true;
+					}
+
+					if (NewCommand.op == R4300i_CP1) {
+						if (NewCommand.fmt == R4300i_COP1_S && (NewCommand.funct & 0x30) == 0x30) {
+							EffectDelaySlot = true;
+						}
+						if (NewCommand.fmt == R4300i_COP1_D && (NewCommand.funct & 0x30) == 0x30) {
+							EffectDelaySlot = true;
+						}
+>>>>>>> c31e3f210c49f962bbc1efb1cef83e79768e8525
 					}
 					return EffectDelaySlot;
 				} 
@@ -96,7 +123,7 @@ int DelaySlotEffectsJump (DWORD JumpPC)
 	case R4300i_BGTZL: 
 		return DelaySlotEffectsCompare(JumpPC,Command.rs,Command.rt);
 	}
-	return TRUE;
+	return true;
 }
 
 CCodeSection::CCodeSection( CCodeBlock * CodeBlock, DWORD EnterPC, DWORD ID, bool LinkAllowed) :
@@ -117,12 +144,12 @@ CCodeSection::CCodeSection( CCodeBlock * CodeBlock, DWORD EnterPC, DWORD ID, boo
 	CPU_Message(__FUNCTION__ ": ID %d EnterPC 0x%08X",ID,EnterPC);
 }
 
-CCodeSection::~CCodeSection( void )
+CCodeSection::~CCodeSection()
 {
 	
 }
 
-void CCodeSection::CompileExit ( DWORD JumpPC, DWORD TargetPC, CRegInfo &ExitRegSet, CExitInfo::EXIT_REASON reason, int CompileNow, void (*x86Jmp)(const char * Label, DWORD Value))
+void CCodeSection::CompileExit(DWORD JumpPC, DWORD TargetPC, CRegInfo &ExitRegSet, CExitInfo::EXIT_REASON reason, bool CompileNow, void(*x86Jmp)(const char * Label, DWORD Value))
 {
 	if (!CompileNow) 
 	{
@@ -380,7 +407,7 @@ void CCodeSection::CompileExit ( DWORD JumpPC, DWORD TargetPC, CRegInfo &ExitReg
 	}
 }
 
-void CCodeSection::GenerateSectionLinkage (void)
+void CCodeSection::GenerateSectionLinkage()
 {
 	CCodeSection * TargetSection[] =
 	{
@@ -696,7 +723,7 @@ void CCodeSection::GenerateSectionLinkage (void)
 	{
 		if (JumpInfo[i]->FallThrough && !TargetSection[i]->GenerateX86Code(m_BlockInfo->NextTest())) 
 		{ 
-			JumpInfo[i]->FallThrough = FALSE;				
+			JumpInfo[i]->FallThrough = false;
 			JmpLabel32(JumpInfo[i]->BranchLabel.c_str(),0);
 			JumpInfo[i]->LinkLocation = (DWORD *)(m_RecompPos - 4);
 		}
@@ -992,7 +1019,7 @@ void CCodeSection::SyncRegState ( const CRegInfo & SyncTo )
 	}
 }
 
-void CCodeSection::SetDelaySlot (void) 
+void CCodeSection::SetDelaySlot()
 {
 	m_DelaySlot = true;
 }
@@ -1012,18 +1039,26 @@ void CCodeSection::SetContinueAddress (DWORD JumpPC, DWORD TargetPC)
 	m_Cont.BranchLabel.Format("0x%08X",TargetPC);
 }
 
+<<<<<<< HEAD
 void CCodeSection::CompileCop1Test (void)
 {
 	if (m_RegWorkingSet.FpuBeenUsed())
 	{
 		return;
 	}
+=======
+void CCodeSection::CompileCop1Test()
+{
+	if (m_RegWorkingSet.FpuBeenUsed())
+		return;
+
+>>>>>>> c31e3f210c49f962bbc1efb1cef83e79768e8525
 	TestVariable(STATUS_CU1,&g_Reg->STATUS_REGISTER,"STATUS_REGISTER");
-	CompileExit(m_CompilePC,m_CompilePC,m_RegWorkingSet,CExitInfo::COP1_Unuseable,FALSE,JeLabel32);
-	m_RegWorkingSet.FpuBeenUsed() = TRUE;
+	CompileExit(m_CompilePC,m_CompilePC,m_RegWorkingSet,CExitInfo::COP1_Unuseable,false,JeLabel32);
+	m_RegWorkingSet.FpuBeenUsed() = true;
 }
 
-bool CCodeSection::ParentContinue ( void )
+bool CCodeSection::ParentContinue()
 {
 	if (m_ParentSection.size() > 0)
 	{
@@ -1049,7 +1084,7 @@ bool CCodeSection::ParentContinue ( void )
 }
 
 /*int TestValue = 0;
-void TestFunc ( void )
+void TestFunc()
 {
 	TestValue += 1;
 	if (TestValue >= 4)
@@ -1879,7 +1914,7 @@ bool CCodeSection::IsAllParentLoops(CCodeSection * Parent, bool IgnoreIfCompiled
 	return true;
 }
 
-bool CCodeSection::SetupRegisterForLoop ( void )
+bool CCodeSection::SetupRegisterForLoop()
 {
 	CRegInfo OriginalReg = m_RegWorkingSet;
 	if (!LoopAnalysis(m_BlockInfo, this).SetupRegisterForLoop())
@@ -1896,7 +1931,7 @@ bool CCodeSection::SetupRegisterForLoop ( void )
 	return true;
 }
 
-bool CCodeSection::InheritParentInfo ( void )
+bool CCodeSection::InheritParentInfo()
 {	
 	if (m_CompiledLocation == NULL)
 	{
@@ -2396,7 +2431,7 @@ bool CCodeSection::DisplaySectionInformation (DWORD ID, DWORD Test)
 	return true;
 }
 
-void CCodeSection::DisplaySectionInformation (void)
+void CCodeSection::DisplaySectionInformation()
 {
 	if (m_SectionID == 0)
 	{
