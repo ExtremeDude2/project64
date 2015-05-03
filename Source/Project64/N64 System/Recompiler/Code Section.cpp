@@ -24,7 +24,8 @@ int DelaySlotEffectsJump (DWORD JumpPC)
 		return TRUE;
 	}
 =======
-static bool DelaySlotEffectsJump(DWORD JumpPC) {
+static bool DelaySlotEffectsJump(DWORD JumpPC)
+{
 	OPCODE Command;
 
 	if (!g_MMU->LW_VAddr(JumpPC, Command.Hex))
@@ -39,7 +40,8 @@ static bool DelaySlotEffectsJump(DWORD JumpPC) {
 		{
 		case R4300i_SPECIAL_JR:	return DelaySlotEffectsCompare(JumpPC,Command.rs,0);
 =======
-		switch (Command.funct) {
+		switch (Command.funct)
+		{
 		case R4300i_SPECIAL_JR: return DelaySlotEffectsCompare(JumpPC,Command.rs,0);
 >>>>>>> c31e3f210c49f962bbc1efb1cef83e79768e8525
 		case R4300i_SPECIAL_JALR: return DelaySlotEffectsCompare(JumpPC,Command.rs,31);
@@ -97,7 +99,8 @@ static bool DelaySlotEffectsJump(DWORD JumpPC) {
 							EffectDelaySlot = TRUE;
 						} 
 =======
-					if (!g_MMU->LW_VAddr(JumpPC + 4, NewCommand.Hex)) {
+					if (!g_MMU->LW_VAddr(JumpPC + 4, NewCommand.Hex))
+					{
 						return true;
 					}
 
@@ -1346,7 +1349,8 @@ bool CCodeSection::GenerateX86Code ( DWORD Test )
 		case R4300i_XORI: XORI(); break;
 		case R4300i_LUI: LUI(); break;
 		case R4300i_CP0:
-			switch (m_Opcode.rs) {
+			switch (m_Opcode.rs)
+			{
 			case R4300i_COP0_MF: COP0_MF(); break;
 			case R4300i_COP0_MT: COP0_MT(); break;
 			default:

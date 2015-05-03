@@ -33,8 +33,14 @@ public:
 		return m_JumpTable;
 	}
 =======
-	PCCompiledFunc_TABLE * FunctionTable() const { return m_FunctionTable; }
-	PCCompiledFunc       * JumpTable() const { return m_JumpTable; }
+	PCCompiledFunc_TABLE * FunctionTable() const
+	{
+		return m_FunctionTable;
+	}
+	PCCompiledFunc       * JumpTable() const
+	{
+		return m_JumpTable;
+	}
 >>>>>>> c31e3f210c49f962bbc1efb1cef83e79768e8525
 
 private:
