@@ -18,22 +18,11 @@
 #include <Project64-core/N64System/Mips/OpcodeName.h>
 #include <Project64-core/N64System/Interpreter/InterpreterCPU.h>
 #include <Project64-core/Logging.h>
+#include <Project64-core/Debugger.h>
 #include <float.h>
 #include <math.h>
 
 #if (defined(_MSC_VER) && (_MSC_VER < 1800))
-double round(double num)
-{
-    return (num - floor(num) > 0.5) ? ceil(num) : floor(num);
-}
-
-float roundf(float num)
-{
-    return (num - floorf(num) > 0.5) ? ceilf(num) : floorf(num);
-}
-#endif
-
-#if (defined(_MSC_VER) && (_MSC_VER <= 1700))
 double trunc(double num)
 {
     return (num < 0) ? ceil(num) : floor(num);
@@ -261,13 +250,13 @@ R4300iOp::Func * R4300iOp::BuildInterpreter()
     Jump_Special[45] = SPECIAL_DADDU;
     Jump_Special[46] = SPECIAL_DSUB;
     Jump_Special[47] = SPECIAL_DSUBU;
-    Jump_Special[48] = UnknownOpcode;
-    Jump_Special[49] = UnknownOpcode;
-    Jump_Special[50] = UnknownOpcode;
-    Jump_Special[51] = UnknownOpcode;
+    Jump_Special[48] = SPECIAL_TGE;
+    Jump_Special[49] = SPECIAL_TGEU;
+    Jump_Special[50] = SPECIAL_TLT;
+    Jump_Special[51] = SPECIAL_TLTU;
     Jump_Special[52] = SPECIAL_TEQ;
     Jump_Special[53] = UnknownOpcode;
-    Jump_Special[54] = UnknownOpcode;
+    Jump_Special[54] = SPECIAL_TNE;
     Jump_Special[55] = UnknownOpcode;
     Jump_Special[56] = SPECIAL_DSLL;
     Jump_Special[57] = UnknownOpcode;
@@ -286,13 +275,13 @@ R4300iOp::Func * R4300iOp::BuildInterpreter()
     Jump_Regimm[5] = UnknownOpcode;
     Jump_Regimm[6] = UnknownOpcode;
     Jump_Regimm[7] = UnknownOpcode;
-    Jump_Regimm[8] = UnknownOpcode;
-    Jump_Regimm[9] = UnknownOpcode;
-    Jump_Regimm[10] = UnknownOpcode;
-    Jump_Regimm[11] = UnknownOpcode;
-    Jump_Regimm[12] = UnknownOpcode;
+    Jump_Regimm[8] = REGIMM_TGEI;
+    Jump_Regimm[9] = REGIMM_TGEIU;
+    Jump_Regimm[10] = REGIMM_TLTI;
+    Jump_Regimm[11] = REGIMM_TLTIU;
+    Jump_Regimm[12] = REGIMM_TEQI;
     Jump_Regimm[13] = UnknownOpcode;
-    Jump_Regimm[14] = UnknownOpcode;
+    Jump_Regimm[14] = REGIMM_TNEI;
     Jump_Regimm[15] = UnknownOpcode;
     Jump_Regimm[16] = REGIMM_BLTZAL;
     Jump_Regimm[17] = REGIMM_BGEZAL;
@@ -483,13 +472,13 @@ R4300iOp::Func * R4300iOp::BuildInterpreter()
     Jump_CoP1_S[5] = COP1_S_ABS;
     Jump_CoP1_S[6] = COP1_S_MOV;
     Jump_CoP1_S[7] = COP1_S_NEG;
-    Jump_CoP1_S[8] = UnknownOpcode;
+    Jump_CoP1_S[8] = COP1_S_ROUND_L;
     Jump_CoP1_S[9] = COP1_S_TRUNC_L;
-    Jump_CoP1_S[10] = COP1_S_CEIL_L;		//added by Witten
-    Jump_CoP1_S[11] = COP1_S_FLOOR_L;		//added by Witten
+    Jump_CoP1_S[10] = COP1_S_CEIL_L;
+    Jump_CoP1_S[11] = COP1_S_FLOOR_L;
     Jump_CoP1_S[12] = COP1_S_ROUND_W;
     Jump_CoP1_S[13] = COP1_S_TRUNC_W;
-    Jump_CoP1_S[14] = COP1_S_CEIL_W;		//added by Witten
+    Jump_CoP1_S[14] = COP1_S_CEIL_W;
     Jump_CoP1_S[15] = COP1_S_FLOOR_W;
     Jump_CoP1_S[16] = UnknownOpcode;
     Jump_CoP1_S[17] = UnknownOpcode;
@@ -548,14 +537,14 @@ R4300iOp::Func * R4300iOp::BuildInterpreter()
     Jump_CoP1_D[5] = COP1_D_ABS;
     Jump_CoP1_D[6] = COP1_D_MOV;
     Jump_CoP1_D[7] = COP1_D_NEG;
-    Jump_CoP1_D[8] = UnknownOpcode;
-    Jump_CoP1_D[9] = COP1_D_TRUNC_L;		//added by Witten
-    Jump_CoP1_D[10] = COP1_D_CEIL_L;		//added by Witten
-    Jump_CoP1_D[11] = COP1_D_FLOOR_L;		//added by Witten
+    Jump_CoP1_D[8] = COP1_D_ROUND_L;
+    Jump_CoP1_D[9] = COP1_D_TRUNC_L;
+    Jump_CoP1_D[10] = COP1_D_CEIL_L;
+    Jump_CoP1_D[11] = COP1_D_FLOOR_L;
     Jump_CoP1_D[12] = COP1_D_ROUND_W;
     Jump_CoP1_D[13] = COP1_D_TRUNC_W;
-    Jump_CoP1_D[14] = COP1_D_CEIL_W;		//added by Witten
-    Jump_CoP1_D[15] = COP1_D_FLOOR_W;		//added by Witten
+    Jump_CoP1_D[14] = COP1_D_CEIL_W;
+    Jump_CoP1_D[15] = COP1_D_FLOOR_W;
     Jump_CoP1_D[16] = UnknownOpcode;
     Jump_CoP1_D[17] = UnknownOpcode;
     Jump_CoP1_D[18] = UnknownOpcode;
@@ -1036,6 +1025,10 @@ void R4300iOp::LDL()
     uint64_t Value;
 
     Address = _GPR[m_Opcode.base].UW[0] + (int16_t)m_Opcode.offset;
+    if (HaveReadBP() && g_Debugger->ReadBP64(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     Offset = Address & 7;
 
     if (!g_MMU->LD_VAddr((Address & ~7), Value))
@@ -1063,6 +1056,10 @@ void R4300iOp::LDR()
     uint64_t Value;
 
     Address = _GPR[m_Opcode.base].UW[0] + (int16_t)m_Opcode.offset;
+    if (HaveReadBP() && g_Debugger->ReadBP64(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     Offset = Address & 7;
 
     if (!g_MMU->LD_VAddr((Address & ~7), Value))
@@ -1082,6 +1079,10 @@ void R4300iOp::LDR()
 void R4300iOp::LB()
 {
     uint32_t Address = _GPR[m_Opcode.base].UW[0] + (int16_t)m_Opcode.offset;
+    if (HaveReadBP() && g_Debugger->ReadBP8(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (!g_MMU->LB_VAddr(Address, _GPR[m_Opcode.rt].UB[0]))
     {
         if (bShowTLBMisses())
@@ -1103,6 +1104,10 @@ void R4300iOp::LH()
     {
         ADDRESS_ERROR_EXCEPTION(Address, true);
     }
+    if (HaveReadBP() && g_Debugger->ReadBP16(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (!g_MMU->LH_VAddr(Address, _GPR[m_Opcode.rt].UHW[0]))
     {
         if (bShowTLBMisses())
@@ -1122,6 +1127,10 @@ void R4300iOp::LWL()
     uint32_t Offset, Address, Value;
 
     Address = _GPR[m_Opcode.base].UW[0] + (int16_t)m_Opcode.offset;
+    if (HaveReadBP() && g_Debugger->ReadBP32(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     Offset = Address & 3;
 
     if (!g_MMU->LW_VAddr((Address & ~3), Value))
@@ -1145,7 +1154,10 @@ void R4300iOp::LW()
     {
         ADDRESS_ERROR_EXCEPTION(Address, true);
     }
-
+    if (HaveReadBP() && g_Debugger->ReadBP32(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (GenerateLog())
     {
         Log_LW((*_PROGRAM_COUNTER), Address);
@@ -1168,6 +1180,10 @@ void R4300iOp::LW()
 void R4300iOp::LBU()
 {
     uint32_t Address = _GPR[m_Opcode.base].UW[0] + (int16_t)m_Opcode.offset;
+    if (HaveReadBP() && g_Debugger->ReadBP8(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (!g_MMU->LB_VAddr(Address, _GPR[m_Opcode.rt].UB[0]))
     {
         if (bShowTLBMisses())
@@ -1189,6 +1205,10 @@ void R4300iOp::LHU()
     {
         ADDRESS_ERROR_EXCEPTION(Address, true);
     }
+    if (HaveReadBP() && g_Debugger->ReadBP16(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (!g_MMU->LH_VAddr(Address, _GPR[m_Opcode.rt].UHW[0]))
     {
         if (bShowTLBMisses())
@@ -1209,6 +1229,10 @@ void R4300iOp::LWR()
 
     Address = _GPR[m_Opcode.base].UW[0] + (int16_t)m_Opcode.offset;
     Offset = Address & 3;
+    if (HaveReadBP() && g_Debugger->ReadBP32(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
 
     if (!g_MMU->LW_VAddr((Address & ~3), Value))
     {
@@ -1231,6 +1255,10 @@ void R4300iOp::LWU()
     {
         ADDRESS_ERROR_EXCEPTION(Address, true);
     }
+    if (HaveReadBP() && g_Debugger->ReadBP32(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
 
     if (!g_MMU->LW_VAddr(Address, _GPR[m_Opcode.rt].UW[0]))
     {
@@ -1249,9 +1277,13 @@ void R4300iOp::LWU()
 void R4300iOp::SB()
 {
     uint32_t Address = _GPR[m_Opcode.base].UW[0] + (int16_t)m_Opcode.offset;
+    if (HaveWriteBP() && g_Debugger->WriteBP8(Address) && MemoryBreakpoint())
+    { 
+        return;
+    }
     if (!g_MMU->SB_VAddr(Address, _GPR[m_Opcode.rt].UB[0]))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -1269,9 +1301,13 @@ void R4300iOp::SH()
     {
         ADDRESS_ERROR_EXCEPTION(Address, false);
     }
+    if (HaveWriteBP() && g_Debugger->WriteBP16(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (!g_MMU->SH_VAddr(Address, _GPR[m_Opcode.rt].UHW[0]))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -1287,11 +1323,15 @@ void R4300iOp::SWL()
     uint32_t Offset, Address, Value;
 
     Address = _GPR[m_Opcode.base].UW[0] + (int16_t)m_Opcode.offset;
+    if (HaveWriteBP() && g_Debugger->WriteBP32(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     Offset = Address & 3;
 
     if (!g_MMU->LW_VAddr((Address & ~3), Value))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -1307,7 +1347,7 @@ void R4300iOp::SWL()
 
     if (!g_MMU->SW_VAddr((Address & ~0x03), Value))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -1325,13 +1365,17 @@ void R4300iOp::SW()
     {
         ADDRESS_ERROR_EXCEPTION(Address, false);
     }
+    if (HaveWriteBP() && g_Debugger->WriteBP32(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (GenerateLog())
     {
         Log_SW((*_PROGRAM_COUNTER), Address, _GPR[m_Opcode.rt].UW[0]);
     }
     if (!g_MMU->SW_VAddr(Address, _GPR[m_Opcode.rt].UW[0]))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -1358,11 +1402,15 @@ void R4300iOp::SDL()
     uint64_t Value;
 
     Address = _GPR[m_Opcode.base].UW[0] + (int16_t)m_Opcode.offset;
+    if (HaveWriteBP() && g_Debugger->WriteBP64(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     Offset = Address & 7;
 
     if (!g_MMU->LD_VAddr((Address & ~7), Value))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -1378,7 +1426,7 @@ void R4300iOp::SDL()
 
     if (!g_MMU->SD_VAddr((Address & ~7), Value))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -1406,11 +1454,15 @@ void R4300iOp::SDR()
     uint64_t Value;
 
     Address = _GPR[m_Opcode.base].UW[0] + (int16_t)m_Opcode.offset;
+    if (HaveWriteBP() && g_Debugger->WriteBP64(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     Offset = Address & 7;
 
     if (!g_MMU->LD_VAddr((Address & ~7), Value))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -1426,7 +1478,7 @@ void R4300iOp::SDR()
 
     if (!g_MMU->SD_VAddr((Address & ~7), Value))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -1442,11 +1494,15 @@ void R4300iOp::SWR()
     uint32_t Offset, Address, Value;
 
     Address = _GPR[m_Opcode.base].UW[0] + (int16_t)m_Opcode.offset;
+    if (HaveWriteBP() && g_Debugger->WriteBP32(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     Offset = Address & 3;
 
     if (!g_MMU->LW_VAddr((Address & ~3), Value))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -1462,7 +1518,7 @@ void R4300iOp::SWR()
 
     if (!g_MMU->SW_VAddr((Address & ~0x03), Value))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -1490,6 +1546,11 @@ void R4300iOp::LL()
         ADDRESS_ERROR_EXCEPTION(Address, true);
     }
 
+    if (HaveReadBP() && g_Debugger->ReadBP32(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
+
     if (!g_MMU->LW_VAddr(Address, _GPR[m_Opcode.rt].UW[0]))
     {
         if (bShowTLBMisses())
@@ -1513,6 +1574,10 @@ void R4300iOp::LWC1()
     {
         ADDRESS_ERROR_EXCEPTION(Address, true);
     }
+    if (HaveReadBP() && g_Debugger->ReadBP32(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (!g_MMU->LW_VAddr(Address, *(uint32_t *)_FPR_S[m_Opcode.ft]))
     {
         if (bShowTLBMisses())
@@ -1529,6 +1594,10 @@ void R4300iOp::SC()
     if ((Address & 3) != 0)
     {
         ADDRESS_ERROR_EXCEPTION(Address, false);
+    }
+    if (HaveWriteBP() && g_Debugger->WriteBP32(Address) && MemoryBreakpoint())
+    {
+        return;
     }
     Log_SW((*_PROGRAM_COUNTER), Address, _GPR[m_Opcode.rt].UW[0]);
     if ((*_LLBit) == 1)
@@ -1552,9 +1621,13 @@ void R4300iOp::LD()
     {
         ADDRESS_ERROR_EXCEPTION(Address, true);
     }
+    if (HaveReadBP() && g_Debugger->ReadBP64(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (!g_MMU->LD_VAddr(Address, _GPR[m_Opcode.rt].UDW))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -1581,9 +1654,13 @@ void R4300iOp::LDC1()
     {
         ADDRESS_ERROR_EXCEPTION(Address, true);
     }
+    if (HaveReadBP() && g_Debugger->ReadBP64(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (!g_MMU->LD_VAddr(Address, *(uint64_t *)_FPR_D[m_Opcode.ft]))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -1602,10 +1679,14 @@ void R4300iOp::SWC1()
     {
         ADDRESS_ERROR_EXCEPTION(Address, false);
     }
+    if (HaveWriteBP() && g_Debugger->WriteBP32(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
 
     if (!g_MMU->SW_VAddr(Address, *(uint32_t *)_FPR_S[m_Opcode.ft]))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -1621,13 +1702,18 @@ void R4300iOp::SDC1()
     uint32_t Address = _GPR[m_Opcode.base].UW[0] + (int16_t)m_Opcode.offset;
 
     TEST_COP1_USABLE_EXCEPTION();
+    if (HaveWriteBP() && g_Debugger->WriteBP64(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
+
     if ((Address & 7) != 0)
     {
         ADDRESS_ERROR_EXCEPTION(Address, false);
     }
     if (!g_MMU->SD_VAddr(Address, *(int64_t *)_FPR_D[m_Opcode.ft]))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -1645,9 +1731,13 @@ void R4300iOp::SD()
     {
         ADDRESS_ERROR_EXCEPTION(Address, false);
     }
+    if (HaveWriteBP() && g_Debugger->WriteBP64(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (!g_MMU->SD_VAddr(Address, _GPR[m_Opcode.rt].UDW))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->BreakPoint(__FILE__, __LINE__);
         }
@@ -1772,7 +1862,7 @@ void R4300iOp::SPECIAL_MULTU()
 
 void R4300iOp::SPECIAL_DIV()
 {
-    if (_GPR[m_Opcode.rt].UDW != 0)
+    if (_GPR[m_Opcode.rt].W[0] != 0)
     {
         _RegLO->DW = _GPR[m_Opcode.rs].W[0] / _GPR[m_Opcode.rt].W[0];
         _RegHI->DW = _GPR[m_Opcode.rs].W[0] % _GPR[m_Opcode.rt].W[0];
@@ -1843,7 +1933,7 @@ void R4300iOp::SPECIAL_DDIV()
     }
     else
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->DisplayError("DDIV by 0 ???");
         }
@@ -1859,7 +1949,7 @@ void R4300iOp::SPECIAL_DDIVU()
     }
     else
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->DisplayError("DDIVU by 0 ???");
         }
@@ -1958,9 +2048,49 @@ void R4300iOp::SPECIAL_DSUBU()
 
 void R4300iOp::SPECIAL_TEQ()
 {
-    if (_GPR[m_Opcode.rs].DW == _GPR[m_Opcode.rt].DW && bHaveDebugger())
+    if (_GPR[m_Opcode.rs].DW == _GPR[m_Opcode.rt].DW)
     {
-        g_Notify->DisplayError("Should trap this ???");
+        g_Reg->DoTrapException(m_NextInstruction == JUMP);
+    }
+}
+
+void R4300iOp::SPECIAL_TGE()
+{
+    if (_GPR[m_Opcode.rs].DW >= _GPR[m_Opcode.rt].DW)
+    {
+        g_Reg->DoTrapException(m_NextInstruction == JUMP);
+    }
+}
+
+void R4300iOp::SPECIAL_TGEU()
+{
+    if (_GPR[m_Opcode.rs].UDW >= _GPR[m_Opcode.rt].UDW)
+    {
+        g_Reg->DoTrapException(m_NextInstruction == JUMP);
+    }
+}
+
+void R4300iOp::SPECIAL_TLT()
+{
+    if (_GPR[m_Opcode.rs].DW < _GPR[m_Opcode.rt].DW)
+    {
+        g_Reg->DoTrapException(m_NextInstruction == JUMP);
+    }
+}
+
+void R4300iOp::SPECIAL_TLTU()
+{
+    if (_GPR[m_Opcode.rs].UDW < _GPR[m_Opcode.rt].UDW)
+    {
+        g_Reg->DoTrapException(m_NextInstruction == JUMP);
+    }
+}
+
+void R4300iOp::SPECIAL_TNE()
+{
+    if (_GPR[m_Opcode.rs].DW != _GPR[m_Opcode.rt].DW)
+    {
+        g_Reg->DoTrapException(m_NextInstruction == JUMP);
     }
 }
 
@@ -2106,6 +2236,18 @@ void R4300iOp::REGIMM_BGEZAL()
         m_JumpToLocation = (*_PROGRAM_COUNTER) + ((int16_t)m_Opcode.offset << 2) + 4;
         if ((*_PROGRAM_COUNTER) == m_JumpToLocation)
         {
+            if (CDebugSettings::HaveDebugger())
+            {
+                if (g_Reg->m_PROGRAM_COUNTER < 0x80000400)
+                {
+                    // Break out of possible checksum halt
+                    g_Notify->DisplayMessage(5, "Broke out of permanent loop! Invalid checksum?");
+                    m_JumpToLocation = (*_PROGRAM_COUNTER) + 8;
+                    _GPR[31].DW = (int32_t)((*_PROGRAM_COUNTER) + 8);
+                    R4300iOp::m_NextInstruction = DELAY_SLOT;
+                    return;
+                }
+            }
             if (!DelaySlotEffectsCompare((*_PROGRAM_COUNTER), m_Opcode.rs, 0))
             {
                 CInterpreterCPU::InPermLoop();
@@ -2118,6 +2260,63 @@ void R4300iOp::REGIMM_BGEZAL()
     }
     _GPR[31].DW = (int32_t)((*_PROGRAM_COUNTER) + 8);
 }
+
+void R4300iOp::REGIMM_TEQI()
+{
+    if (_GPR[m_Opcode.rs].DW == (int64_t)((int16_t)m_Opcode.immediate))
+    {
+        g_Reg->DoTrapException(m_NextInstruction == JUMP);
+    }
+}
+
+void R4300iOp::REGIMM_TGEI()
+{
+    if (_GPR[m_Opcode.rs].DW >= (int64_t)((int16_t)m_Opcode.immediate))
+    {
+        g_Reg->DoTrapException(m_NextInstruction == JUMP);
+    }
+}
+
+void R4300iOp::REGIMM_TGEIU()
+{
+    int32_t imm32 = (int16_t)m_Opcode.immediate;
+    int64_t imm64;
+
+    imm64 = imm32;
+    if (_GPR[m_Opcode.rs].DW >= (uint64_t)imm64)
+    {
+        g_Reg->DoTrapException(m_NextInstruction == JUMP);
+    }
+}
+
+void R4300iOp::REGIMM_TLTI()
+{
+    if (_GPR[m_Opcode.rs].DW < (int64_t)((int16_t)m_Opcode.immediate))
+    {
+        g_Reg->DoTrapException(m_NextInstruction == JUMP);
+    }
+}
+
+void R4300iOp::REGIMM_TLTIU()
+{
+    int32_t imm32 = (int16_t)m_Opcode.immediate;
+    int64_t imm64;
+
+    imm64 = imm32;
+    if (_GPR[m_Opcode.rs].DW < (uint64_t)imm64)
+    {
+        g_Reg->DoTrapException(m_NextInstruction == JUMP);
+    }
+}
+
+void R4300iOp::REGIMM_TNEI()
+{
+    if (_GPR[m_Opcode.rs].DW != (int64_t)((int16_t)m_Opcode.immediate))
+    {
+        g_Reg->DoTrapException(m_NextInstruction == JUMP);
+    }
+}
+
 /************************** COP0 functions **************************/
 void R4300iOp::COP0_MF()
 {
@@ -2188,7 +2387,7 @@ void R4300iOp::COP0_MT()
         {
             _CP0[m_Opcode.rd] = _GPR[m_Opcode.rt].UW[0];
         }
-        if ((_CP0[m_Opcode.rd] & 0x18) != 0 && bHaveDebugger())
+        if ((_CP0[m_Opcode.rd] & 0x18) != 0 && HaveDebugger())
         {
             g_Notify->DisplayError("Left kernel mode ??");
         }
@@ -2196,7 +2395,7 @@ void R4300iOp::COP0_MT()
         break;
     case 13: //cause
         _CP0[m_Opcode.rd] &= 0xFFFFCFF;
-        if ((_GPR[m_Opcode.rt].UW[0] & 0x300) != 0 && bHaveDebugger())
+        if ((_GPR[m_Opcode.rt].UW[0] & 0x300) != 0 && HaveDebugger())
         {
             g_Notify->DisplayError("Set IP0 or IP1");
         }
@@ -2279,7 +2478,7 @@ void R4300iOp::COP1_CF()
     TEST_COP1_USABLE_EXCEPTION();
     if (m_Opcode.fs != 31 && m_Opcode.fs != 0)
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->DisplayError("CFC1 what register are you writing to ?");
         }
@@ -2315,7 +2514,7 @@ void R4300iOp::COP1_CT()
         }
         return;
     }
-    if (bHaveDebugger())
+    if (HaveDebugger())
     {
         g_Notify->DisplayError("CTC1 what register are you writing to ?");
     }
@@ -2385,10 +2584,29 @@ __inline void Float_RoundToInteger32(int32_t * Dest, const float * Source, int R
 #pragma warning(push)
 #pragma warning(disable:4244) //warning C4244: disabe conversion from 'float' to 'int32_t', possible loss of data
 
-    if (RoundType == FE_TONEAREST) { *Dest = roundf(*Source); }
-    if (RoundType == FE_TOWARDZERO) { *Dest = truncf(*Source); }
-    if (RoundType == FE_UPWARD) { *Dest = ceilf(*Source); }
-    if (RoundType == FE_DOWNWARD) { *Dest = floorf(*Source); }
+    if (RoundType == FE_TONEAREST)
+    {
+        float reminder = *Source - floorf(*Source);
+        if (reminder == 0.5)
+        {
+            //make any decimal point in even to go to odd and any decimal point in odd stay as odd
+            if (*Source < 0)
+            {
+                *Dest = (int)truncf(*Source) % 2 != 0 ? floorf(*Source) : ceilf(*Source);
+            }
+            else
+            {
+                *Dest = (int)truncf(*Source) % 2 != 0 ? ceilf(*Source) : floorf(*Source);
+            }
+        }
+        else
+        {
+            *Dest = roundf(*Source);
+        }
+    }
+    else if (RoundType == FE_TOWARDZERO) { *Dest = truncf(*Source); }
+    else if (RoundType == FE_UPWARD) { *Dest = ceilf(*Source); }
+    else if (RoundType == FE_DOWNWARD) { *Dest = floorf(*Source); }
 
 #pragma warning(pop)
 }
@@ -2398,10 +2616,29 @@ __inline void Float_RoundToInteger64(int64_t * Dest, const float * Source, int R
 #pragma warning(push)
 #pragma warning(disable:4244) //warning C4244: disabe conversion from 'float' to 'int64_t', possible loss of data
 
-    if (RoundType == FE_TONEAREST) { *Dest = roundf(*Source); }
-    if (RoundType == FE_TOWARDZERO) { *Dest = truncf(*Source); }
-    if (RoundType == FE_UPWARD) { *Dest = ceilf(*Source); }
-    if (RoundType == FE_DOWNWARD) { *Dest = floorf(*Source); }
+    if (RoundType == FE_TONEAREST)
+    {
+        float reminder = *Source - floorf(*Source);
+        if (reminder == 0.5)
+        {
+            //make any decimal point in even to go to odd and any decimal point in odd stay as odd
+            if (*Source < 0)
+            {
+                *Dest = (int)truncf(*Source) % 2 != 0 ? floorf(*Source) : ceilf(*Source);
+            }
+            else
+            {
+                *Dest = (int)truncf(*Source) % 2 != 0 ? ceilf(*Source) : floorf(*Source);
+            }
+        }
+        else
+        {
+            *Dest = roundf(*Source);
+        }
+    }
+    else if (RoundType == FE_TOWARDZERO) { *Dest = truncf(*Source); }
+    else if (RoundType == FE_UPWARD) { *Dest = ceilf(*Source); }
+    else if (RoundType == FE_DOWNWARD) { *Dest = floorf(*Source); }
 
 #pragma warning(pop)
 }
@@ -2463,6 +2700,12 @@ void R4300iOp::COP1_S_NEG()
     *(float *)_FPR_S[m_Opcode.fd] = (*(float *)_FPR_S[m_Opcode.fs] * -1.0f);
 }
 
+void R4300iOp::COP1_S_ROUND_L()
+{
+    TEST_COP1_USABLE_EXCEPTION();
+    Float_RoundToInteger64(&*(int64_t *)_FPR_D[m_Opcode.fd], &*(float *)_FPR_S[m_Opcode.fs], FE_TONEAREST);
+}
+
 void R4300iOp::COP1_S_TRUNC_L()
 {
     TEST_COP1_USABLE_EXCEPTION();
@@ -2470,13 +2713,13 @@ void R4300iOp::COP1_S_TRUNC_L()
 }
 
 void R4300iOp::COP1_S_CEIL_L()
-{	//added by Witten
+{
     TEST_COP1_USABLE_EXCEPTION();
     Float_RoundToInteger64(&*(int64_t *)_FPR_D[m_Opcode.fd], &*(float *)_FPR_S[m_Opcode.fs], FE_UPWARD);
 }
 
 void R4300iOp::COP1_S_FLOOR_L()
-{	//added by Witten
+{
     TEST_COP1_USABLE_EXCEPTION();
     Float_RoundToInteger64(&*(int64_t *)_FPR_D[m_Opcode.fd], &*(float *)_FPR_S[m_Opcode.fs], FE_DOWNWARD);
 }
@@ -2494,7 +2737,7 @@ void R4300iOp::COP1_S_TRUNC_W()
 }
 
 void R4300iOp::COP1_S_CEIL_W()
-{	//added by Witten
+{
     TEST_COP1_USABLE_EXCEPTION();
     Float_RoundToInteger32(&*(int32_t *)_FPR_S[m_Opcode.fd], &*(float *)_FPR_S[m_Opcode.fs], FE_UPWARD);
 }
@@ -2536,7 +2779,7 @@ void R4300iOp::COP1_S_CMP()
 
     if (_isnan(Temp0) || _isnan(Temp1))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->DisplayError(stdstr_f("%s: Nan ?", __FUNCTION__).c_str());
         }
@@ -2545,7 +2788,7 @@ void R4300iOp::COP1_S_CMP()
         unorded = true;
         if ((m_Opcode.funct & 8) != 0)
         {
-            if (bHaveDebugger())
+            if (HaveDebugger())
             {
                 g_Notify->DisplayError(stdstr_f("Signal InvalidOperationException\nin r4300i_COP1_S_CMP\n%X  %ff\n%X  %ff", Temp0, Temp0, Temp1, Temp1).c_str());
             }
@@ -2572,28 +2815,74 @@ void R4300iOp::COP1_S_CMP()
 }
 
 /************************** COP1: D functions ************************/
-__inline void Double_RoundToInteger32(uint32_t * Dest, const double * Source, int RoundType)
+__inline void Double_RoundToInteger32(int32_t * Dest, const double * Source, int RoundType)
 {
 #pragma warning(push)
 #pragma warning(disable:4244) //warning C4244: disabe conversion from 'double' to 'uint32_t', possible loss of data
 
-    if (RoundType == FE_TONEAREST) { *Dest = round(*Source); }
-    if (RoundType == FE_TOWARDZERO) { *Dest = trunc(*Source); }
-    if (RoundType == FE_UPWARD) { *Dest = ceil(*Source); }
-    if (RoundType == FE_DOWNWARD) { *Dest = floor(*Source); }
+    if (RoundType == FE_TONEAREST)
+    {
+        double reminder = *Source - floor(*Source);
+        if (reminder == 0.5)
+        {
+            //make any decimal point in even to go to odd and any decimal point in odd stay as odd
+            if (*Source < 0)
+            {
+                *Dest = (int)truncf(*Source) % 2 != 0 ? floor(*Source) : ceil(*Source);
+            }
+            else
+            {
+                *Dest = (int)truncf(*Source) % 2 != 0 ? ceil(*Source) : floor(*Source);
+            }
+        }
+        else
+        {
+            *Dest = round(*Source);
+        }
+    }
+    else if (RoundType == FE_TOWARDZERO) { *Dest = trunc(*Source); }
+    else if (RoundType == FE_UPWARD) { *Dest = ceil(*Source); }
+    else if (RoundType == FE_DOWNWARD) { *Dest = floor(*Source); }
+    else
+    {
+        g_Notify->BreakPoint(__FILE__, __LINE__);
+    }
 
 #pragma warning(pop)
 }
 
-__inline void Double_RoundToInteger64(uint64_t * Dest, const double * Source, int RoundType)
+__inline void Double_RoundToInteger64(int64_t * Dest, const double * Source, int RoundType)
 {
 #pragma warning(push)
 #pragma warning(disable:4244) //warning C4244: disabe conversion from 'double' to 'uint64_t', possible loss of data
 
-    if (RoundType == FE_TONEAREST) { *Dest = round(*Source); }
-    if (RoundType == FE_TOWARDZERO) { *Dest = trunc(*Source); }
-    if (RoundType == FE_UPWARD) { *Dest = ceil(*Source); }
-    if (RoundType == FE_DOWNWARD) { *Dest = floor(*Source); }
+    if (RoundType == FE_TONEAREST)
+    {
+        double reminder = *Source - floor(*Source);
+        if (reminder == 0.5)
+        {
+            //make any decimal point in even to go to odd and any decimal point in odd stay as odd
+            if (*Source < 0)
+            {
+                *Dest = (int)truncf(*Source) % 2 != 0 ? floor(*Source) : ceil(*Source);
+            }
+            else
+            {
+                *Dest = (int)truncf(*Source) % 2 != 0 ? ceil(*Source) : floor(*Source);
+            }
+        }
+        else
+        {
+            *Dest = round(*Source);
+        }
+    }
+    else if (RoundType == FE_TOWARDZERO) { *Dest = trunc(*Source); }
+    else if (RoundType == FE_UPWARD) { *Dest = ceil(*Source); }
+    else if (RoundType == FE_DOWNWARD) { *Dest = floor(*Source); }
+    else
+    {
+        g_Notify->BreakPoint(__FILE__, __LINE__);
+    }
 
 #pragma warning(pop)
 }
@@ -2654,46 +2943,52 @@ void R4300iOp::COP1_D_NEG()
     *(double *)_FPR_D[m_Opcode.fd] = (*(double *)_FPR_D[m_Opcode.fs] * -1.0);
 }
 
-void R4300iOp::COP1_D_TRUNC_L()
-{	//added by Witten
+void R4300iOp::COP1_D_ROUND_L()
+{
     TEST_COP1_USABLE_EXCEPTION();
-    Double_RoundToInteger64(&*(uint64_t *)_FPR_S[m_Opcode.fd], &*(double *)_FPR_D[m_Opcode.fs], FE_TOWARDZERO);
+    Double_RoundToInteger64(&*(int64_t *)_FPR_D[m_Opcode.fd], &*(double *)_FPR_D[m_Opcode.fs], FE_TONEAREST);
+}
+
+void R4300iOp::COP1_D_TRUNC_L()
+{
+    TEST_COP1_USABLE_EXCEPTION();
+    Double_RoundToInteger64(&*(int64_t *)_FPR_D[m_Opcode.fd], &*(double *)_FPR_D[m_Opcode.fs], FE_TOWARDZERO);
 }
 
 void R4300iOp::COP1_D_CEIL_L()
-{	//added by Witten
+{
     TEST_COP1_USABLE_EXCEPTION();
-    Double_RoundToInteger64(&*(uint64_t *)_FPR_S[m_Opcode.fd], &*(double *)_FPR_D[m_Opcode.fs], FE_UPWARD);
+    Double_RoundToInteger64(&*(int64_t *)_FPR_D[m_Opcode.fd], &*(double *)_FPR_D[m_Opcode.fs], FE_UPWARD);
 }
 
 void R4300iOp::COP1_D_FLOOR_L()
-{	//added by Witten
+{
     TEST_COP1_USABLE_EXCEPTION();
-    Double_RoundToInteger64(&*(uint64_t *)_FPR_D[m_Opcode.fd], &*(double *)_FPR_S[m_Opcode.fs], FE_DOWNWARD);
+    Double_RoundToInteger64(&*(int64_t *)_FPR_D[m_Opcode.fd], &*(double *)_FPR_S[m_Opcode.fs], FE_DOWNWARD);
 }
 
 void R4300iOp::COP1_D_ROUND_W()
 {
     TEST_COP1_USABLE_EXCEPTION();
-    Double_RoundToInteger32(&*(uint32_t *)_FPR_S[m_Opcode.fd], &*(double *)_FPR_D[m_Opcode.fs], FE_TONEAREST);
+    Double_RoundToInteger32(&*(int32_t *)_FPR_S[m_Opcode.fd], &*(double *)_FPR_D[m_Opcode.fs], FE_TONEAREST);
 }
 
 void R4300iOp::COP1_D_TRUNC_W()
 {
     TEST_COP1_USABLE_EXCEPTION();
-    Double_RoundToInteger32(&*(uint32_t *)_FPR_S[m_Opcode.fd], &*(double *)_FPR_D[m_Opcode.fs], FE_TOWARDZERO);
+    Double_RoundToInteger32(&*(int32_t *)_FPR_S[m_Opcode.fd], &*(double *)_FPR_D[m_Opcode.fs], FE_TOWARDZERO);
 }
 
 void R4300iOp::COP1_D_CEIL_W()
-{	//added by Witten
+{
     TEST_COP1_USABLE_EXCEPTION();
-    Double_RoundToInteger32(&*(uint32_t *)_FPR_S[m_Opcode.fd], &*(double *)_FPR_D[m_Opcode.fs], FE_UPWARD);
+    Double_RoundToInteger32(&*(int32_t *)_FPR_S[m_Opcode.fd], &*(double *)_FPR_D[m_Opcode.fs], FE_UPWARD);
 }
 
 void R4300iOp::COP1_D_FLOOR_W()
-{	//added by Witten
+{
     TEST_COP1_USABLE_EXCEPTION();
-    Double_RoundToInteger32(&*(uint32_t *)_FPR_D[m_Opcode.fd], &*(double *)_FPR_S[m_Opcode.fs], FE_DOWNWARD);
+    Double_RoundToInteger32(&*(int32_t *)_FPR_D[m_Opcode.fd], &*(double *)_FPR_S[m_Opcode.fs], FE_DOWNWARD);
 }
 
 void R4300iOp::COP1_D_CVT_S()
@@ -2706,13 +3001,13 @@ void R4300iOp::COP1_D_CVT_S()
 void R4300iOp::COP1_D_CVT_W()
 {
     TEST_COP1_USABLE_EXCEPTION();
-    Double_RoundToInteger32(&*(uint32_t *)_FPR_S[m_Opcode.fd], &*(double *)_FPR_D[m_Opcode.fs], *_RoundingModel);
+    Double_RoundToInteger32(&*(int32_t *)_FPR_S[m_Opcode.fd], &*(double *)_FPR_D[m_Opcode.fs], *_RoundingModel);
 }
 
 void R4300iOp::COP1_D_CVT_L()
 {
     TEST_COP1_USABLE_EXCEPTION();
-    Double_RoundToInteger64(&*(uint64_t *)_FPR_D[m_Opcode.fd], &*(double *)_FPR_D[m_Opcode.fs], *_RoundingModel);
+    Double_RoundToInteger64(&*(int64_t *)_FPR_D[m_Opcode.fd], &*(double *)_FPR_D[m_Opcode.fs], *_RoundingModel);
 }
 
 void R4300iOp::COP1_D_CMP()
@@ -2728,7 +3023,7 @@ void R4300iOp::COP1_D_CMP()
 
     if (_isnan(Temp0.D) || _isnan(Temp1.D))
     {
-        if (bHaveDebugger())
+        if (HaveDebugger())
         {
             g_Notify->DisplayError(stdstr_f("%s: Nan ?", __FUNCTION__).c_str());
         }
@@ -2737,7 +3032,7 @@ void R4300iOp::COP1_D_CMP()
         unorded = true;
         if ((m_Opcode.funct & 8) != 0)
         {
-            if (bHaveDebugger())
+            if (HaveDebugger())
             {
                 g_Notify->DisplayError(stdstr_f("Signal InvalidOperationException\nin %s", __FUNCTION__).c_str());
             }
@@ -2808,7 +3103,7 @@ void R4300iOp::UnknownOpcode()
 
         strcat(Message, "\n\nDo you wish to enter the debugger ?");
 
-        response = MessageBox(NULL, Message, GS(MSG_MSGBOX_TITLE), MB_YESNO | MB_ICONERROR);
+        response = MessageBox(NULL, Message, GS(MSG_MSGBOX_ERROR_TITLE), MB_YESNO | MB_ICONERROR);
         if (response == IDYES)
         {
             Enter_R4300i_Commands_Window();
@@ -2816,4 +3111,21 @@ void R4300iOp::UnknownOpcode()
         ExitThread(0);
     }
 #endif
+}
+
+bool R4300iOp::MemoryBreakpoint()
+{
+    if (g_Settings->LoadBool(Debugger_SteppingOps))
+    {
+        return false;
+    }
+    g_Settings->SaveBool(Debugger_SteppingOps, true);
+    g_Debugger->WaitForStep();
+    if (SkipOp())
+    {
+        // Skip command if instructed by the debugger
+        g_Settings->SaveBool(Debugger_SkipOp, false);
+        return true;
+    }
+    return false;
 }

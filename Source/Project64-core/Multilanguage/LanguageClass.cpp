@@ -71,6 +71,7 @@ void CLanguage::LoadDefaultStrings(void)
     DEF_STR(MENU_RECENT_ROM, "Recent ROM");
     DEF_STR(MENU_RECENT_DIR, "Recent ROM Directories");
     DEF_STR(MENU_EXIT, "E&xit");
+    DEF_STR(MENU_OPEN_COMBO, "Open &Combo");
 
     //System Menu
     DEF_STR(MENU_SYSTEM, "&System");
@@ -88,6 +89,7 @@ void CLanguage::LoadDefaultStrings(void)
     DEF_STR(MENU_RESUME, "R&esume");
     DEF_STR(MENU_RESET_SOFT, "&Soft Reset");
     DEF_STR(MENU_RESET_HARD, "&Hard Reset");
+    DEF_STR(MENU_SWAPDISK, "Swap &Disk");
 
     //Options Menu
     DEF_STR(MENU_OPTIONS, "&Options");
@@ -133,7 +135,8 @@ void CLanguage::LoadDefaultStrings(void)
     DEF_STR(POPUP_SETTINGS, "Edit Game Settings");
     DEF_STR(POPUP_CHEATS, "Edit Cheats");
     DEF_STR(POPUP_GFX_PLUGIN, "Graphics Plugin");
-    DEF_STR(POPUP_PLAYDISK, "Play Game with Disk");
+	DEF_STR(POPUP_PLAYDISK, "Play Game with Disk");
+	DEF_STR(POPUP_ENHANCEMENTS, "Choose Enhancement");	
 
     //Alternate Name to save Slot
     DEF_STR(SAVE_SLOT_DEFAULT, "Save Slot - Default");
@@ -155,6 +158,7 @@ void CLanguage::LoadDefaultStrings(void)
     DEF_STR(RB_FILENAME, "File Name");
     DEF_STR(RB_INTERNALNAME, "Internal Name");
     DEF_STR(RB_GOODNAME, "Good Name");
+    DEF_STR(RB_NAME, "Name");
     DEF_STR(RB_STATUS, "Status");
     DEF_STR(RB_ROMSIZE, "ROM Size");
     DEF_STR(RB_NOTES_CORE, "Notes (core)");
@@ -197,6 +201,8 @@ void CLanguage::LoadDefaultStrings(void)
     DEF_STR(TAB_SHORTCUTS, "Keyboard Shortcuts");
     DEF_STR(TAB_ROMSTATUS, "Status");
     DEF_STR(TAB_RECOMPILER, "Recompiler");
+    DEF_STR(TAB_DEFAULTS, "Defaults");
+    DEF_STR(TAB_DISKDRIVE, "64DD");
 
     //Plugin Dialog
     DEF_STR(PLUG_ABOUT, "About");
@@ -231,7 +237,12 @@ void CLanguage::LoadDefaultStrings(void)
     DEF_STR(OPTION_DISABLE_SS, "Disable screen saver when running a ROM");
     DEF_STR(OPTION_DISPLAY_FR, "Display speed");
     DEF_STR(OPTION_CHECK_RUNNING, "Check if Project64 is already running");
+    DEF_STR(OPTION_UNIQUE_SAVE_DIR, "Unique Game Save Directory");
     DEF_STR(OPTION_CHANGE_FR, "Speed display:");
+    DEF_STR(OPTION_IPL_ROM_PATH, "Japanese Retail 64DD IPL ROM Path:");
+    DEF_STR(OPTION_IPL_ROM_USA_PATH, "American Retail 64DD IPL ROM Path:");
+    DEF_STR(OPTION_IPL_ROM_TOOL_PATH, "Development 64DD IPL ROM Path:");
+    DEF_STR(OPTION_DISKSAVETYPE, "Disk Save Type:");
 
     //ROM Browser Tab
     DEF_STR(RB_MAX_ROMS, "Max # of ROMs remembered (0-10):");
@@ -240,6 +251,7 @@ void CLanguage::LoadDefaultStrings(void)
     DEF_STR(RB_DIRS, "dirs");
     DEF_STR(RB_USE, "Use ROM browser");
     DEF_STR(RB_DIR_RECURSION, "Use directory recursion");
+    DEF_STR(RB_FILEEXT, "Show file extensions");
     DEF_STR(RB_AVALIABLE_FIELDS, "Available fields:");
     DEF_STR(RB_SHOW_FIELDS, "Order of fields:");
     DEF_STR(RB_ADD, "Add ->");
@@ -286,6 +298,9 @@ void CLanguage::LoadDefaultStrings(void)
     DEF_STR(ROM_COUNTPERBYTE, "AI count per byte:");
     DEF_STR(ROM_32BIT, "32-bit engine:");
     DEF_STR(ROM_DELAY_DP, "Delay DP interrupt:");
+    DEF_STR(ROM_OVER_CLOCK_MODIFIER, "Overclock modifier:");
+    DEF_STR(ROM_UNALIGNED_DMA, "Unaligned DMA");
+    DEF_STR(ROM_RANDOMIZE_SIPI_INTERRUPTS, "Randomize SI/PI interrupts");
 
     //Core Styles
     DEF_STR(CORE_INTERPTER, "Interpreter");
@@ -348,6 +363,7 @@ void CLanguage::LoadDefaultStrings(void)
     DEF_STR(STR_FR_VIS, "Vertical interrupts per second");
     DEF_STR(STR_FR_DLS, "Display lists per second");
     DEF_STR(STR_FR_PERCENT, "Percentage of full speed");
+    DEF_STR(STR_FR_DLS_VIS, "VI/s & DL/s");
 
     // Increase speed
     DEF_STR(STR_INSREASE_SPEED, "Increase Game Speed");
@@ -358,6 +374,10 @@ void CLanguage::LoadDefaultStrings(void)
     DEF_STR(BOTTOM_RESET_ALL, "Reset All");
     DEF_STR(BOTTOM_APPLY, "Apply");
     DEF_STR(BOTTOM_CLOSE, "Close");
+
+    //Disk Save Type
+    DEF_STR(DISKSAVE_SHADOW, "Full Disk Copy");
+    DEF_STR(DISKSAVE_RAM, "Save Area Only");
 
     /*********************************************************************************
     * ROM Information                                                                *
@@ -436,6 +456,22 @@ void CLanguage::LoadDefaultStrings(void)
     DEF_STR(STR_SHORTCUT_SAVESLOT, "Save Slots");
 
     /*********************************************************************************
+    * Support Window                                                                 *
+    *********************************************************************************/
+    DEF_STR(MSG_SUPPORT_TITLE, "Support Project64");
+    DEF_STR(MSG_SUPPORT_INFO, "Project64 is a software package designed to emulate a Nintendo64 video game system on a Microsoft Windows based PC. This allows you to play real N64 software in much the same way as it would be on the original hardware system.\n\nIf you like Project64 and have gotten some value out of it then please support project64 as either a thank you, or your desire to see it continually improved.\n\nIf you have supported project64:");
+    DEF_STR(MSG_SUPPORT_ENTER_CODE, "Enter notification code");
+    DEF_STR(MSG_SUPPORT_PROJECT64, "Support Project64");
+    DEF_STR(MSG_SUPPORT_CONTINUE, "Continue");
+    DEF_STR(MSG_SUPPORT_ENTER_SUPPORT_CODE, "Please enter the support code");
+    DEF_STR(MSG_SUPPORT_INCORRECT_CODE, "Incorrect support code");
+    DEF_STR(MSG_SUPPORT_COMPLETE, "Thank you");
+    DEF_STR(MSG_SUPPORT_ENTER_CODE_TITLE, "Enter code");
+    DEF_STR(MSG_SUPPORT_ENTER_CODE_DESC, "Please enter the code in the email");
+    DEF_STR(MSG_SUPPORT_OK, "OK");
+    DEF_STR(MSG_SUPPORT_CANCEL, "Cancel");
+
+    /*********************************************************************************
     * Messages                                                                       *
     *********************************************************************************/
     DEF_STR(MSG_CPU_PAUSED, "*** CPU PAUSED ***");
@@ -463,7 +499,8 @@ void CLanguage::LoadDefaultStrings(void)
     DEF_STR(MSG_UNHANDLED_OP, "Unhandled R4300i opcode at");
     DEF_STR(MSG_NONMAPPED_SPACE, "Executing from non-mapped space.\n\nVerify ROM and its settings.");
     DEF_STR(MSG_SAVE_STATE_HEADER, "This saved state does not appear to match the running ROM.\n\nStates must be saved & loaded between 100% identical ROMs.\nIn particular, the REGION and VERSION need to be the same.\nLoading this state is likely to cause the game and/or emulator to crash.\n\nAre you sure you want to continue loading?");
-    DEF_STR(MSG_MSGBOX_TITLE, "Error");
+    DEF_STR(MSG_MSGBOX_WARNING_TITLE, "Warning");
+    DEF_STR(MSG_MSGBOX_ERROR_TITLE, "Error");
     DEF_STR(MSG_PIF2_ERROR, "Copyright sequence not found in LUT. Game will no longer function.");
     DEF_STR(MSG_PIF2_TITLE, "Copy Protection Failure");
     DEF_STR(MSG_PLUGIN_CHANGE, "Changing a plugin requires Project64 to reset a running ROM.\nIf you don't want to lose your place, answer No and save the current state first.\n\nChange plugins and reset ROM now?");
@@ -496,26 +533,92 @@ void CLanguage::LoadDefaultStrings(void)
     DEF_STR(MSG_SET_LLE_GFX_MSG, "Graphics LLE is not for general use!!!\nIt is advisable that you only use this for testing and not for playing games.\n\nChange to graphics LLE?");
     DEF_STR(MSG_SET_HLE_AUD_TITLE, "Audio High-Level Emulation");
     DEF_STR(MSG_SET_HLE_AUD_MSG, "Audio HLE requires a third-party plugin!!!\nIf you do not use a third-party audio plugin that supports HLE, you will hear no sound.\n\nChange to audio HLE?");
+    DEF_STR(MSG_FAIL_IMAGE_IPL, "File loaded does not appear to be a valid 64DD IPL ROM.\n\nVerify your ROMs with GoodN64.");
+    DEF_STR(MSG_IPL_REQUIRED, "Nintendo 64DD Japanese Retail IPL ROM not found.\nIt is required to play japanese region 64DD disk images.\n\nPlease select the required ROM in the Settings.");
+    DEF_STR(MSG_USA_IPL_REQUIRED, "Nintendo 64DD American Retail IPL ROM not found.\nIt is required to play american region 64DD disk images.\n\nPlease select the required ROM in the Settings.");
+    DEF_STR(MSG_TOOL_IPL_REQUIRED, "Nintendo 64DD Development IPL ROM not found.\nIt is required to play development 64DD disk images.\n\nPlease select the required ROM in the Settings.");
+
+    /*********************************************************************************
+    * Android                                                                        *
+    *********************************************************************************/
+    DEF_STR(ANDROID_SETTINGS, "Settings");
+    DEF_STR(ANDROID_FORUM, "Help/Forum");
+    DEF_STR(ANDROID_REPORT_BUG, "Report Issue");
+    DEF_STR(ANDROID_ABOUT, "About");
+    DEF_STR(ANDROID_GALLERY_RECENTLYPLAYED, "Recently played");
+    DEF_STR(ANDROID_GALLERY_LIBRARY, "Games");
+    DEF_STR(ANDROID_GAMEDIR, "Game Dir");
+    DEF_STR(ANDROID_SELECTDIR, "Select an folder to scan");
+    DEF_STR(ANDROID_INCLUDE_SUBDIRECTORIES, "Include subdirectories");
+    DEF_STR(ANDROID_PARENTFOLDER, "Parent folder");
+    DEF_STR(ANDROID_DIRECTORIES, "Directories");
+    DEF_STR(ANDROID_INTERNAL_MEMORY, "Internal memory");
+    DEF_STR(ANDROID_TITLE, "Scanning...");
+    DEF_STR(ANDROID_OK, "OK");
+    DEF_STR(ANDROID_CANCEL, "Cancel");
+    DEF_STR(ANDROID_ABOUT_INFO, "Information");
+    DEF_STR(ANDROID_ABOUT_APP_NAME, "Project64 for Android");
+    DEF_STR(ANDROID_ABOUT_LICENCE, "License");
+    DEF_STR(ANDROID_ABOUT_REVISION, "Revision");
+    DEF_STR(ANDROID_ABOUT_TEXT, "Project64 for Android\u2122 is a port of the windows version of project64.The Android\u2122 version can play most N64 games.");
+    DEF_STR(ANDROID_ABOUT_PJ64_AUTHORS, "Project64 Authors.");
+	DEF_STR(ANDROID_DISCORD, "Discord");
+	DEF_STR(ANDROID_SUPPORT_PJ64, "Support Project64");
+	DEF_STR(ANDROID_REVIEW_PJ64, "Review Project64");
+
+    //In game menu
+    DEF_STR(ANDROID_MENU_SETTINGS, "Settings");
+    DEF_STR(ANDROID_MENU_SAVESTATE, "Save State");
+    DEF_STR(ANDROID_MENU_LOADSTATE, "Load State");
+    DEF_STR(ANDROID_MENU_ENDEMULATION, "End Emulation");
+    DEF_STR(ANDROID_MENU_PAUSE, "Pause");
+    DEF_STR(ANDROID_MENU_RESUME, "Resume");
+    DEF_STR(ANDROID_MENU_GAMESPEED, "Game Speed");
+    DEF_STR(ANDROID_MENU_CURRENTSAVESTATE, "Current Save State...");
+    DEF_STR(ANDROID_MENU_CURRENTSAVEAUTO, "Auto");
+    DEF_STR(ANDROID_MENU_CURRENTSAVESLOT, "Slot");
+    DEF_STR(ANDROID_MENU_CONSOLERESET, "Reset");
+    DEF_STR(ANDROID_MENU_DEBUGGINGOPTIONS, "Debugging Options");
+    DEF_STR(ANDROID_MENU_RESETFUNCTIONTIMES, "Reset Function Times");
+    DEF_STR(ANDROID_MENU_DUMPFUNCTIONTIMES, "Dump Function Times");
+
+    //Video plugin
+    DEF_STR(ANDROID_VIDEO_NATIVE_RES, "Native");
 }
 
 CLanguage::CLanguage() :
-m_emptyString(""),
-m_LanguageLoaded(false)
+    m_emptyString(""),
+    m_LanguageLoaded(false)
 {
     LoadDefaultStrings();
     if (g_Settings)
     {
         m_SelectedLanguage = g_Settings->LoadStringVal(Setting_CurrentLanguage);
+        g_Settings->RegisterChangeCB(Debugger_DebugLanguage, this, (CSettings::SettingChangedFunc)StaticResetStrings);
+    }
+}
+
+CLanguage::~CLanguage()
+{
+    if (g_Settings)
+    {
+        g_Settings->UnregisterChangeCB(Debugger_DebugLanguage, this, (CSettings::SettingChangedFunc)StaticResetStrings);
     }
 }
 
 bool CLanguage::LoadCurrentStrings(void)
 {
-    LanguageList LangList = GetLangList();
-    stdstr       Filename;
-
     //clear all the current strings loaded
     m_CurrentStrings.clear();
+
+    if (g_Settings->LoadBool(Debugger_DebugLanguage))
+    {
+        m_LanguageLoaded = true;
+        return true;
+    }
+
+    LanguageList LangList = GetLangList();
+    stdstr Filename;
 
     //Find the file name of the current language
     for (LanguageList::iterator Language = LangList.begin(); Language != LangList.end(); Language++)
@@ -597,6 +700,15 @@ const std::string & CLanguage::GetString(LanguageStringID StringID)
         return CurrentString->second;
     }
 
+    if (g_Settings->LoadBool(Debugger_DebugLanguage))
+    {
+        std::pair<LANG_STRINGS::iterator, bool> ret = m_CurrentStrings.insert(LANG_STRINGS::value_type(StringID, stdstr_f("#%d#", StringID)));
+        if (ret.second)
+        {
+            return ret.first->second;
+        }
+    }
+
     LANG_STRINGS::iterator DefString = m_DefaultStrings.find(StringID);
     if (DefString != m_DefaultStrings.end())
     {
@@ -643,7 +755,7 @@ std::string CLanguage::GetLangString(const char * FileName, LanguageStringID ID)
 
 LANG_STR CLanguage::GetNextLangString(void * OpenFile)
 {
-    enum { MAX_STRING_LEN = 400 };
+    enum { MAX_STRING_LEN = 800 };
     int32_t  StringID;
     char szString[MAX_STRING_LEN];  //temp store the string from the file
 
@@ -722,6 +834,11 @@ bool CLanguage::IsCurrentLang(LanguageFile & File)
         return true;
     }
     return false;
+}
+
+void CLanguage::ResetStrings(void)
+{
+    m_CurrentStrings.clear();
 }
 
 #ifdef _WIN32

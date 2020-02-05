@@ -24,13 +24,16 @@ CAdvancedOptionsPage::CAdvancedOptionsPage(HWND hParent, const RECT & rcDispay)
     SetDlgItemTextW(m_hWnd, IDC_ZIP, wGS(ADVANCE_COMPRESS).c_str());
     SetDlgItemTextW(m_hWnd, IDC_DEBUGGER, wGS(ADVANCE_DEBUGGER).c_str());
     SetDlgItemTextW(m_hWnd, IDC_REMEMBER_CHEAT, wGS(OPTION_REMEMBER_CHEAT).c_str());
+    SetDlgItemTextW(m_hWnd, IDC_UNIQUE_SAVE_DIR, wGS(OPTION_UNIQUE_SAVE_DIR).c_str());
     SetDlgItemTextW(m_hWnd, IDC_CHECK_RUNNING, wGS(OPTION_CHECK_RUNNING).c_str());
     SetDlgItemTextW(m_hWnd, IDC_DISPLAY_FRAMERATE, wGS(OPTION_CHANGE_FR).c_str());
 
     AddModCheckBox(GetDlgItem(IDC_START_ON_ROM_OPEN), Setting_AutoStart);
     AddModCheckBox(GetDlgItem(IDC_ZIP), Setting_AutoZipInstantSave);
     AddModCheckBox(GetDlgItem(IDC_DEBUGGER), Debugger_Enabled);
+	AddModCheckBox(GetDlgItem(IDC_INTERPRETER), Setting_ForceInterpreterCPU);
     AddModCheckBox(GetDlgItem(IDC_REMEMBER_CHEAT), Setting_RememberCheats);
+    AddModCheckBox(GetDlgItem(IDC_UNIQUE_SAVE_DIR), Setting_UniqueSaveDir);
     AddModCheckBox(GetDlgItem(IDC_CHECK_RUNNING), Setting_CheckEmuRunning);
     AddModCheckBox(GetDlgItem(IDC_DISPLAY_FRAMERATE), UserInterface_DisplayFrameRate);
 
@@ -41,6 +44,7 @@ CAdvancedOptionsPage::CAdvancedOptionsPage(HWND hParent, const RECT & rcDispay)
         ComboBox->AddItemW(wGS(STR_FR_VIS).c_str(), FR_VIs);
         ComboBox->AddItemW(wGS(STR_FR_DLS).c_str(), FR_DLs);
         ComboBox->AddItemW(wGS(STR_FR_PERCENT).c_str(), FR_PERCENT);
+        ComboBox->AddItemW(wGS(STR_FR_DLS_VIS).c_str(), FR_VIs_DLs);
     }
 
     UpdatePageSettings();
@@ -70,4 +74,11 @@ bool CAdvancedOptionsPage::EnableReset(void)
 void CAdvancedOptionsPage::ResetPage()
 {
     CSettingsPageImpl<CAdvancedOptionsPage>::ResetPage();
+}
+
+void CAdvancedOptionsPage::UpdatePageSettings(void)
+{
+    m_InUpdateSettings = true;
+    CSettingsPageImpl<CAdvancedOptionsPage>::UpdatePageSettings();
+    m_InUpdateSettings = false;
 }

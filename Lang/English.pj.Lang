@@ -34,6 +34,7 @@
 #107#  "Recent ROM"
 #108#  "Recent ROM Directories"
 #109#  "E&xit"
+#110#  "Open &Combo"
 
 //System Menu
 #120#  "&System"
@@ -51,6 +52,7 @@
 #132#  "R&esume"
 #133#  "&Soft Reset"
 #134#  "&Hard Reset"
+#135#  "Swap &Disk"
 
 //Options Menu
 #140#  "&Options"
@@ -174,6 +176,7 @@
 #317#  "Players"
 #318#  "Force Feedback"
 #319#  "File Format"
+#321#  "Name"
 
 //Select ROM
 #320#  "Select current ROM directory"
@@ -199,6 +202,8 @@
 #409#  "Keyboard Shortcuts"
 #410#  "Status"
 #411#  "Recompiler"
+#412#  "Defaults"
+#413#  "64DD"
 
 //Plugin Dialog
 #420#  "About"
@@ -234,6 +239,11 @@
 #465#  "Display speed"
 #466#  "Speed display:"
 #467#  "Check if Project64 is already running"
+#468#  "Unique Game Save Directory"
+#469#  "Japanese Retail 64DD IPL ROM Path:"
+#470#  "American Retail 64DD IPL ROM Path:"
+#471#  "Development 64DD IPL ROM Path:"
+#472#  "Disk Save Type:"
 
 //ROM Browser Tab
 #480#  "Max # of ROMs remembered (0-10):"
@@ -361,6 +371,10 @@
 #722#  "Apply"
 #723#  "Close"
 
+//Disk Save Type
+#730#  "Full Disk Copy"
+#731#  "Save Area Only"
+
 /*********************************************************************************
 * ROM Information                                                                *
 *********************************************************************************/
@@ -438,6 +452,22 @@
 #1105#  "Save Slots"
 
 /*********************************************************************************
+* Support Window                                                                 *
+*********************************************************************************/
+#1200#  "Support Project64"
+#1201#  "Project64 is a software package designed to emulate a Nintendo64 video game system on a Microsoft Windows based PC. This allows you to play real N64 software in much the same way as it would be on the original hardware system.\n\nIf you like Project64 and have gotten some value out of it then please support project64 as either a thank you, or your desire to see it continually improved.\n\nIf you have supported project64:"
+#1202#  "Enter notification code"
+#1203#  "Support Project64"
+#1204#  "Continue"
+#1205#  "Please enter the support code"
+#1206#  "Incorrect support code"
+#1207#  "Thank you"
+#1208#  "Enter code"
+#1209#  "Please enter the code in the email"
+#1210#  "OK"
+#1211#  "Cancel"
+
+/*********************************************************************************
 * Messages                                                                       *
 *********************************************************************************/
 #2000#  "*** CPU PAUSED ***"
@@ -498,3 +528,50 @@
 #2055#  "Graphics LLE is not for general use!!!\nIt is advisable that you only use this for testing and not for playing games.\n\nChange to graphics LLE?"
 #2056#  "Audio High-Level Emulation"
 #2057#  "Audio HLE requires a third-party plugin!!!\nIf you do not use a third-party audio plugin that supports HLE, you will hear no sound.\n\nChange to audio HLE?"
+#2058#  "File loaded does not appear to be a valid 64DD IPL ROM.\n\nVerify your ROMs with GoodN64."
+#2059#  "Nintendo 64DD Japanese Retail IPL ROM not found.\nIt is required to play japanese region 64DD disk images.\n\nPlease select the required ROM in the Settings."
+#2061#  "Nintendo 64DD American Retail IPL ROM not found.\nIt is required to play american region 64DD disk images.\n\nPlease select the required ROM in the Settings."
+#2062#  "Nintendo 64DD Development IPL ROM not found.\nIt is required to play development 64DD disk images.\n\nPlease select the required ROM in the Settings."
+
+
+/*********************************************************************************
+* Android                                                                        *
+*********************************************************************************/
+#3000#  "Settings"
+#3001#  "Help/Forum"
+#3002#  "Report Issue"
+#3003#  "About"
+#3004#  "Recently played"
+#3005#  "Games"
+#3006#  "Game Dir"
+#3007#  "Select an folder to scan"
+#3008#  "Include subdirectories"
+#3009#  "Parent folder"
+#3010#  "Directories"
+#3011#  "Internal memory"
+#3012#  "Scanning..."
+#3013#  "OK"
+#3014#  "Cancel"
+#3015#  "Information"
+#3016#  "Project64 for Android"
+#3017#  "License"
+#3018#  "Revision"
+#3019#  "Project64 for Android\u2122 is a port of the windows version of project64.The Android\u2122 version can play most N64 games."
+#3020#  "Project64 Authors."
+#3021#  "Discord"
+
+//In game menu
+#3100#  "Settings"
+#3101#  "Save State"
+#3102#  "Load State"
+#3103#  "End Emulation"
+#3104#  "Pause"
+#3105#  "Resume"
+#3106#  "Game Speed"
+#3107#  "Current Save State..."
+#3108#  "Auto"
+#3109#  "Slot"
+#3110#  "Reset"
+#3111#  "Debugging Options"
+#3112#  "Reset Function Times"
+#3113#  "Dump Function Times"

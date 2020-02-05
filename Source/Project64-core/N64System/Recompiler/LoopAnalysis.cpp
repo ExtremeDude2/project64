@@ -14,7 +14,7 @@
 
 #include <Project64-core/N64System/N64Types.h>
 #include <Project64-core/N64System/Recompiler/CodeBlock.h>
-#include <Project64-core/N64System/Recompiler/x86CodeLog.h>
+#include <Project64-core/N64System/Recompiler/RecompilerCodeLog.h>
 #include <Project64-core/N64System/SystemGlobals.h>
 #include <Project64-core/N64System/Mips/MemoryVirtualMem.h>
 #include <Project64-core/N64System/Mips/OpcodeName.h>
@@ -26,11 +26,11 @@
 bool DelaySlotEffectsCompare(uint32_t PC, uint32_t Reg1, uint32_t Reg2);
 
 LoopAnalysis::LoopAnalysis(CCodeBlock * CodeBlock, CCodeSection * Section) :
-m_EnterSection(Section),
-m_BlockInfo(CodeBlock),
-m_PC((uint32_t)-1),
-m_NextInstruction(NORMAL),
-m_Test(m_BlockInfo->NextTest())
+    m_EnterSection(Section),
+    m_BlockInfo(CodeBlock),
+    m_PC((uint32_t)-1),
+    m_NextInstruction(NORMAL),
+    m_Test(m_BlockInfo->NextTest())
 {
     memset(&m_Command, 0, sizeof(m_Command));
 }
@@ -188,7 +188,6 @@ bool LoopAnalysis::CheckLoopRegisterUsage(CCodeSection * Section)
             return false;
         }
         CPU_Message("  %08X: %s", m_PC, R4300iOpcodeName(m_Command.Hex, m_PC));
-        CPU_Message("  %s state: %X value: %X", CRegName::GPR[3], m_Reg.GetMipsRegState(3), m_Reg.GetMipsRegLo(3));
         switch (m_Command.op)
         {
         case R4300i_SPECIAL:
@@ -239,6 +238,9 @@ bool LoopAnalysis::CheckLoopRegisterUsage(CCodeSection * Section)
             case R4300i_SPECIAL_DSLL32: SPECIAL_DSLL32(); break;
             case R4300i_SPECIAL_DSRL32: SPECIAL_DSRL32(); break;
             case R4300i_SPECIAL_DSRA32: SPECIAL_DSRA32(); break;
+            case R4300i_SPECIAL_TEQ:    case R4300i_SPECIAL_TNE:    case R4300i_SPECIAL_TGE:
+            case R4300i_SPECIAL_TGEU:   case R4300i_SPECIAL_TLT:    case R4300i_SPECIAL_TLTU:
+                break;
             default:
                 g_Notify->BreakPoint(__FILE__, __LINE__);
 #ifdef legacycode
@@ -253,6 +255,9 @@ bool LoopAnalysis::CheckLoopRegisterUsage(CCodeSection * Section)
         case R4300i_REGIMM:
             switch (m_Command.rt)
             {
+            case R4300i_REGIMM_TEQI:    case R4300i_REGIMM_TNEI:    case R4300i_REGIMM_TGEI:
+            case R4300i_REGIMM_TGEIU:   case R4300i_REGIMM_TLTI:    case R4300i_REGIMM_TLTIU:
+                break;
             case R4300i_REGIMM_BLTZ:
             case R4300i_REGIMM_BGEZ:
                 m_NextInstruction = DELAY_SLOT;
@@ -746,7 +751,8 @@ bool LoopAnalysis::CheckLoopRegisterUsage(CCodeSection * Section)
             m_NextInstruction = END_BLOCK;
             SetJumpRegSet(Section, m_Reg);
         }
-        else {
+        else 
+        {
             switch (m_NextInstruction)
             {
             case NORMAL:
@@ -761,29 +767,17 @@ bool LoopAnalysis::CheckLoopRegisterUsage(CCodeSection * Section)
                 }
                 break;
             case LIKELY_DELAY_SLOT:
-            {
                 SetContinueRegSet(Section, m_Reg);
                 SetJumpRegSet(Section, m_Reg);
-            }
-            m_NextInstruction = END_BLOCK;
-            break;
+                m_NextInstruction = END_BLOCK;
+                break;
             case DELAY_SLOT_DONE:
-            {
                 SetContinueRegSet(Section, m_Reg);
                 SetJumpRegSet(Section, m_Reg);
-            }
-            m_NextInstruction = END_BLOCK;
-            break;
+                m_NextInstruction = END_BLOCK;
+                break;
             case LIKELY_DELAY_SLOT_DONE:
                 g_Notify->BreakPoint(__FILE__, __LINE__);
-                if (Section->m_CompiledLocation)
-                {
-                }
-                else
-                {
-                    //Section->m_Jump.RegSet = m_Reg;
-                    //Section->m_Jump.DoneDelaySlot = true;
-                }
                 m_NextInstruction = END_BLOCK;
                 break;
             }
@@ -1147,8 +1141,8 @@ void LoopAnalysis::SPECIAL_DADD()
     if (m_Reg.IsConst(m_Command.rt) && m_Reg.IsConst(m_Command.rs))
     {
         m_Reg.SetMipsReg(m_Command.rd,
-            m_Reg.Is64Bit(m_Command.rs) ? m_Reg.GetMipsReg(m_Command.rs) : (int64_t)m_Reg.GetMipsRegLo_S(m_Command.rs) +
-            m_Reg.Is64Bit(m_Command.rt) ? m_Reg.GetMipsReg(m_Command.rt) : (int64_t)m_Reg.GetMipsRegLo_S(m_Command.rt)
+            (m_Reg.Is64Bit(m_Command.rs) ? m_Reg.GetMipsReg(m_Command.rs) : (int64_t)m_Reg.GetMipsRegLo_S(m_Command.rs)) +
+            (m_Reg.Is64Bit(m_Command.rt) ? m_Reg.GetMipsReg(m_Command.rt) : (int64_t)m_Reg.GetMipsRegLo_S(m_Command.rt))
             );
         m_Reg.SetMipsRegState(m_Command.rd, CRegInfo::STATE_CONST_64);
     }
@@ -1168,8 +1162,8 @@ void LoopAnalysis::SPECIAL_DADDU()
     if (m_Reg.IsConst(m_Command.rt) && m_Reg.IsConst(m_Command.rs))
     {
         m_Reg.SetMipsReg(m_Command.rd,
-            m_Reg.Is64Bit(m_Command.rs) ? m_Reg.GetMipsReg(m_Command.rs) : (int64_t)m_Reg.GetMipsRegLo_S(m_Command.rs) +
-            m_Reg.Is64Bit(m_Command.rt) ? m_Reg.GetMipsReg(m_Command.rt) : (int64_t)m_Reg.GetMipsRegLo_S(m_Command.rt)
+            (m_Reg.Is64Bit(m_Command.rs) ? m_Reg.GetMipsReg(m_Command.rs) : (int64_t)m_Reg.GetMipsRegLo_S(m_Command.rs)) +
+            (m_Reg.Is64Bit(m_Command.rt) ? m_Reg.GetMipsReg(m_Command.rt) : (int64_t)m_Reg.GetMipsRegLo_S(m_Command.rt))
             );
         m_Reg.SetMipsRegState(m_Command.rd, CRegInfo::STATE_CONST_64);
     }
@@ -1189,8 +1183,8 @@ void LoopAnalysis::SPECIAL_DSUB()
     if (m_Reg.IsConst(m_Command.rt) && m_Reg.IsConst(m_Command.rs))
     {
         m_Reg.SetMipsReg(m_Command.rd,
-            m_Reg.Is64Bit(m_Command.rs) ? m_Reg.GetMipsReg(m_Command.rs) : (int64_t)m_Reg.GetMipsRegLo_S(m_Command.rs) -
-            m_Reg.Is64Bit(m_Command.rt) ? m_Reg.GetMipsReg(m_Command.rt) : (int64_t)m_Reg.GetMipsRegLo_S(m_Command.rt)
+            (m_Reg.Is64Bit(m_Command.rs) ? m_Reg.GetMipsReg(m_Command.rs) : (int64_t)m_Reg.GetMipsRegLo_S(m_Command.rs)) -
+            (m_Reg.Is64Bit(m_Command.rt) ? m_Reg.GetMipsReg(m_Command.rt) : (int64_t)m_Reg.GetMipsRegLo_S(m_Command.rt))
             );
         m_Reg.SetMipsRegState(m_Command.rd, CRegInfo::STATE_CONST_64);
     }
@@ -1210,8 +1204,8 @@ void LoopAnalysis::SPECIAL_DSUBU()
     if (m_Reg.IsConst(m_Command.rt) && m_Reg.IsConst(m_Command.rs))
     {
         m_Reg.SetMipsReg(m_Command.rd,
-            m_Reg.Is64Bit(m_Command.rs) ? m_Reg.GetMipsReg(m_Command.rs) : (int64_t)m_Reg.GetMipsRegLo_S(m_Command.rs) -
-            m_Reg.Is64Bit(m_Command.rt) ? m_Reg.GetMipsReg(m_Command.rt) : (int64_t)m_Reg.GetMipsRegLo_S(m_Command.rt)
+            (m_Reg.Is64Bit(m_Command.rs) ? m_Reg.GetMipsReg(m_Command.rs) : (int64_t)m_Reg.GetMipsRegLo_S(m_Command.rs)) -
+            (m_Reg.Is64Bit(m_Command.rt) ? m_Reg.GetMipsReg(m_Command.rt) : (int64_t)m_Reg.GetMipsRegLo_S(m_Command.rt))
             );
         m_Reg.SetMipsRegState(m_Command.rd, CRegInfo::STATE_CONST_64);
     }

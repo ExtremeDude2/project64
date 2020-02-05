@@ -11,6 +11,7 @@
 #include "stdafx.h"
 #include <Project64-core/N64System/SystemGlobals.h>
 #include <Project64-core/N64System/N64RomClass.h>
+#include <Project64-core/N64System/N64DiskClass.h>
 #include <Project64-core/N64System/Mips/MemoryVirtualMem.h>
 #include <Project64-core/N64System/Mips/RegisterClass.h>
 #include <Project64-core/N64System/N64Class.h>
@@ -31,12 +32,14 @@ CAudioPlugin::CAudioPlugin() :
 
 CAudioPlugin::~CAudioPlugin()
 {
-    Close();
+    Close(NULL);
     UnloadPlugin();
 }
 
 bool CAudioPlugin::LoadFunctions(void)
 {
+	g_Settings->SaveBool(Setting_SyncViaAudioEnabled, false);
+
     // Find entries for functions in DLL
     void(CALL *InitiateAudio)(void);
     LoadFunction(InitiateAudio);
@@ -97,8 +100,13 @@ bool CAudioPlugin::Initiate(CN64System * System, RenderWindow * Window)
 
     AUDIO_INFO Info = { 0 };
 
+#ifdef _WIN32
     Info.hwnd = Window ? Window->GetWindowHandle() : NULL;
-    Info.hinst =  Window ? Window->GetModuleInstance() : NULL;;
+    Info.hinst = Window ? Window->GetModuleInstance() : NULL;
+#else
+    Info.hwnd = NULL;
+    Info.hinst = NULL;
+#endif
     Info.MemoryBswaped = true;
     Info.CheckInterrupts = DummyCheckInterrupts;
 
@@ -106,8 +114,8 @@ bool CAudioPlugin::Initiate(CN64System * System, RenderWindow * Window)
     // parameters here.. just needed to we can config the DLL.
     if (System == NULL)
     {
-        uint8_t Buffer[100];
-        uint32_t Value = 0;
+        static uint8_t Buffer[100];
+        static uint32_t Value = 0;
 
         Info.HEADER = Buffer;
         Info.RDRAM = Buffer;
@@ -124,25 +132,28 @@ bool CAudioPlugin::Initiate(CN64System * System, RenderWindow * Window)
     // Send initialization information to the DLL
     else
     {
-        Info.HEADER = g_Rom->GetRomAddress();
-        Info.RDRAM = g_MMU->Rdram();
-        Info.DMEM = g_MMU->Dmem();
-        Info.IMEM = g_MMU->Imem();
-        Info.MI__INTR_REG = &g_Reg->m_AudioIntrReg;
-        Info.AI__DRAM_ADDR_REG = &g_Reg->AI_DRAM_ADDR_REG;
-        Info.AI__LEN_REG = &g_Reg->AI_LEN_REG;
-        Info.AI__CONTROL_REG = &g_Reg->AI_CONTROL_REG;
-        Info.AI__STATUS_REG = &g_Reg->AI_STATUS_REG;
-        Info.AI__DACRATE_REG = &g_Reg->AI_DACRATE_REG;
-        Info.AI__BITRATE_REG = &g_Reg->AI_BITRATE_REG;
+        CMipsMemoryVM & MMU = System->m_MMU_VM;
+        CRegisters & Reg = System->m_Reg;
+
+        if (g_Rom->IsLoadedRomDDIPL() && g_Disk != NULL)
+            Info.HEADER = g_Disk->GetDiskHeader();
+        else
+            Info.HEADER = g_Rom->GetRomAddress();
+        Info.RDRAM = MMU.Rdram();
+        Info.DMEM = MMU.Dmem();
+        Info.IMEM = MMU.Imem();
+        Info.MI__INTR_REG = &Reg.m_AudioIntrReg;
+        Info.AI__DRAM_ADDR_REG = &Reg.AI_DRAM_ADDR_REG;
+        Info.AI__LEN_REG = &Reg.AI_LEN_REG;
+        Info.AI__CONTROL_REG = &Reg.AI_CONTROL_REG;
+        Info.AI__STATUS_REG = &Reg.AI_STATUS_REG;
+        Info.AI__DACRATE_REG = &Reg.AI_DACRATE_REG;
+        Info.AI__BITRATE_REG = &Reg.AI_BITRATE_REG;
     }
 
     m_Initialized = InitiateAudio(Info) != 0;
 
 #ifdef _WIN32
-	//jabo had a bug so I call CreateThread so his dllmain gets called again
-    pjutil::DynLibCallDllMain();
-
     if (System != NULL)
     {
         if (AiUpdate)
@@ -152,11 +163,11 @@ bool CAudioPlugin::Initiate(CN64System * System, RenderWindow * Window)
                 WriteTrace(TraceAudioPlugin, TraceDebug, "Terminate Audio Thread");
                 TerminateThread(m_hAudioThread, 0);
             }
-			DWORD ThreadID;
+            DWORD ThreadID;
             m_hAudioThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)AudioThread, (LPVOID)this, 0, &ThreadID);
         }
 
-        if (g_Reg->AI_DACRATE_REG != 0)
+        if (System->m_Reg.AI_DACRATE_REG != 0)
         {
             DacrateChanged(System->SystemType());
         }
@@ -175,7 +186,7 @@ void CAudioPlugin::UnloadPluginDetails(void)
         m_hAudioThread = NULL;
     }
 #endif
-	AiDacrateChanged = NULL;
+    AiDacrateChanged = NULL;
     AiLenChanged = NULL;
     AiReadLength = NULL;
     AiUpdate = NULL;

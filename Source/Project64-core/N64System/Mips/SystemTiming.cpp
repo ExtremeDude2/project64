@@ -16,10 +16,14 @@
 #include <Project64-core/N64System/N64Class.h>
 #include <Project64-core/3rdParty/zip.h>
 
-CSystemTimer::CSystemTimer( int32_t & NextTimer ) :
-m_NextTimer(NextTimer),
-m_inFixTimer(false)
+CSystemTimer::CSystemTimer(CRegisters &Reg, int32_t & NextTimer) :
+    m_LastUpdate(0),
+    m_NextTimer(NextTimer),
+    m_Current(UnknownTimer),
+    m_inFixTimer(false),
+    m_Reg(Reg)
 {
+    memset(m_TimerDetatils, 0, sizeof(m_TimerDetatils));
 }
 
 void CSystemTimer::Reset()
@@ -40,6 +44,7 @@ void CSystemTimer::Reset()
 
 void CSystemTimer::SetTimer(TimerType Type, uint32_t Cycles, bool bRelative)
 {
+    Cycles *= CGameSettings::OverClockModifier();
     if (Type >= MaxTimer || Type == UnknownTimer)
     {
         g_Notify->BreakPoint(__FILE__, __LINE__);
@@ -86,7 +91,7 @@ uint32_t CSystemTimer::GetTimer(TimerType Type)
     {
         return 0x7FFFFFFF;
     }
-    return (uint32_t)CyclesToTimer;
+    return (uint32_t)(CyclesToTimer / CGameSettings::OverClockModifier());
 }
 
 void CSystemTimer::StopTimer(TimerType Type)
@@ -161,12 +166,12 @@ void CSystemTimer::UpdateTimers()
     int TimeTaken = m_LastUpdate - m_NextTimer;
     if (TimeTaken != 0)
     {
-        uint32_t random, wired;
+        int32_t random, wired;
         m_LastUpdate = m_NextTimer;
-        g_Reg->COUNT_REGISTER += TimeTaken;
-        random = g_Reg->RANDOM_REGISTER - (TimeTaken / g_System->CountPerOp());
-        wired = g_Reg->WIRED_REGISTER;
-        if ((int)random < (int)wired)
+        m_Reg.COUNT_REGISTER += (TimeTaken / CGameSettings::OverClockModifier());
+        random = m_Reg.RANDOM_REGISTER - (TimeTaken / g_System->CountPerOp());
+        wired = m_Reg.WIRED_REGISTER;
+        if (random < wired)
         {
             if (wired == 0)
             {
@@ -175,13 +180,10 @@ void CSystemTimer::UpdateTimers()
             else
             {
                 uint32_t increment = 32 - wired;
-                do
-                {
-                    random += increment;
-                } while ((int)random < (int)wired);
+                random += ((wired - random + increment - 1) / increment) * increment;
             }
         }
-        g_Reg->RANDOM_REGISTER = random;
+        m_Reg.RANDOM_REGISTER = random;
     }
 }
 
@@ -189,21 +191,11 @@ void CSystemTimer::TimerDone()
 {
     UpdateTimers();
 
-    /*	uint32_t LastTimer;
-        if (Profiling)
-        {
-        LastTimer = StartTimer(Timer_Done);
-        }
-        if (LogOptions.GenerateLog && LogOptions.LogExceptions && !LogOptions.NoInterrupts)
-        {
-        LogMessage("%08X: Timer Done (Type: %d CurrentTimer: %d)", *_PROGRAM_COUNTER, m_Current, *_Timer );
-        }
-        */
     switch (m_Current)
     {
     case CSystemTimer::CompareTimer:
-        g_Reg->FAKE_CAUSE_REGISTER |= CAUSE_IP7;
-        g_Reg->CheckInterrupts();
+        m_Reg.FAKE_CAUSE_REGISTER |= CAUSE_IP7;
+        m_Reg.CheckInterrupts();
         UpdateCompareTimer();
         break;
     case CSystemTimer::SoftResetTimer:
@@ -212,22 +204,22 @@ void CSystemTimer::TimerDone()
         break;
     case CSystemTimer::SiTimer:
         g_SystemTimer->StopTimer(CSystemTimer::SiTimer);
-        g_Reg->MI_INTR_REG |= MI_INTR_SI;
-        g_Reg->SI_STATUS_REG |= SI_STATUS_INTERRUPT;
-        g_Reg->CheckInterrupts();
+        m_Reg.MI_INTR_REG |= MI_INTR_SI;
+        m_Reg.SI_STATUS_REG |= SI_STATUS_INTERRUPT;
+        m_Reg.CheckInterrupts();
         break;
     case CSystemTimer::PiTimer:
         g_SystemTimer->StopTimer(CSystemTimer::PiTimer);
-        g_Reg->PI_STATUS_REG &= ~PI_STATUS_DMA_BUSY;
-        g_Reg->MI_INTR_REG |= MI_INTR_PI;
-        g_Reg->CheckInterrupts();
+        m_Reg.PI_STATUS_REG &= ~PI_STATUS_DMA_BUSY;
+        m_Reg.MI_INTR_REG |= MI_INTR_PI;
+        m_Reg.CheckInterrupts();
         break;
     case CSystemTimer::DDPiTimer:
         g_SystemTimer->StopTimer(CSystemTimer::DDPiTimer);
-        g_Reg->PI_STATUS_REG &= ~PI_STATUS_DMA_BUSY;
+        m_Reg.PI_STATUS_REG &= ~PI_STATUS_DMA_BUSY;
         DiskBMUpdate();
-        g_Reg->MI_INTR_REG |= MI_INTR_PI;
-        g_Reg->CheckInterrupts();
+        m_Reg.MI_INTR_REG |= MI_INTR_PI;
+        m_Reg.CheckInterrupts();
         break;
     case CSystemTimer::ViTimer:
         try
@@ -238,8 +230,8 @@ void CSystemTimer::TimerDone()
         {
             WriteTrace(TraceN64System, TraceError, "Exception caught\nFile: %s\nLine: %d", __FILE__, __LINE__);
         }
-        g_Reg->MI_INTR_REG |= MI_INTR_VI;
-        g_Reg->CheckInterrupts();
+        m_Reg.MI_INTR_REG |= MI_INTR_VI;
+        m_Reg.CheckInterrupts();
         break;
     case CSystemTimer::RspTimer:
         g_SystemTimer->StopTimer(CSystemTimer::RspTimer);
@@ -254,8 +246,8 @@ void CSystemTimer::TimerDone()
         break;
     case CSystemTimer::RSPTimerDlist:
         g_SystemTimer->StopTimer(CSystemTimer::RSPTimerDlist);
-        g_Reg->m_GfxIntrReg |= MI_INTR_DP;
-        g_Reg->CheckInterrupts();
+        m_Reg.m_GfxIntrReg |= MI_INTR_DP;
+        m_Reg.CheckInterrupts();
         break;
     case CSystemTimer::AiTimerInterrupt:
         g_SystemTimer->StopTimer(CSystemTimer::AiTimerInterrupt);
@@ -280,7 +272,7 @@ void CSystemTimer::SetCompareTimer()
     uint32_t NextCompare = 0x7FFFFFFF;
     if (g_Reg)
     {
-        NextCompare = g_Reg->COMPARE_REGISTER - g_Reg->COUNT_REGISTER;
+        NextCompare = m_Reg.COMPARE_REGISTER - m_Reg.COUNT_REGISTER;
         if ((NextCompare & 0x80000000) != 0)
         {
             NextCompare = 0x7FFFFFFF;
@@ -318,7 +310,7 @@ bool CSystemTimer::SaveAllowed(void)
     return true;
 }
 
-void CSystemTimer::SaveData(void * file) const
+void CSystemTimer::SaveData(zipFile & file) const
 {
     uint32_t TimerDetailsSize = sizeof(TIMER_DETAILS);
     uint32_t Entries = sizeof(m_TimerDetatils) / sizeof(m_TimerDetatils[0]);
@@ -330,7 +322,20 @@ void CSystemTimer::SaveData(void * file) const
     zipWriteInFileInZip(file, (void *)&m_Current, sizeof(m_Current));
 }
 
-void CSystemTimer::LoadData(void * file)
+void CSystemTimer::SaveData(CFile & file) const
+{
+    uint32_t TimerDetailsSize = sizeof(TIMER_DETAILS);
+    uint32_t Entries = sizeof(m_TimerDetatils) / sizeof(m_TimerDetatils[0]);
+
+    file.Write(&TimerDetailsSize, sizeof(TimerDetailsSize));
+    file.Write(&Entries, sizeof(Entries));
+    file.Write((void *)&m_TimerDetatils, sizeof(m_TimerDetatils));
+    file.Write((void *)&m_LastUpdate, sizeof(m_LastUpdate));
+    file.Write(&m_NextTimer, sizeof(m_NextTimer));
+    file.Write((void *)&m_Current, sizeof(m_Current));
+}
+
+void CSystemTimer::LoadData(zipFile & file)
 {
     uint32_t TimerDetailsSize, Entries;
 
@@ -344,14 +349,48 @@ void CSystemTimer::LoadData(void * file)
     }
     if (Entries != sizeof(m_TimerDetatils) / sizeof(m_TimerDetatils[0]))
     {
+        if (Entries < (sizeof(m_TimerDetatils) / sizeof(m_TimerDetatils[0])))
+        {
+            memset((void *)&m_TimerDetatils, 0, sizeof(m_TimerDetatils));
+            unzReadCurrentFile(file, (void *)&m_TimerDetatils, Entries * sizeof(m_TimerDetatils[0]));
+        }
+        else
+        {
+            g_Notify->BreakPoint(__FILE__, __LINE__);
+            return;
+        }
+    }
+    else
+    {
+        unzReadCurrentFile(file, (void *)&m_TimerDetatils, sizeof(m_TimerDetatils));
+    }
+    unzReadCurrentFile(file, (void *)&m_LastUpdate, sizeof(m_LastUpdate));
+    unzReadCurrentFile(file, &m_NextTimer, sizeof(m_NextTimer));
+    unzReadCurrentFile(file, (void *)&m_Current, sizeof(m_Current));
+}
+
+void CSystemTimer::LoadData(CFile & file)
+{
+    uint32_t TimerDetailsSize, Entries;
+
+    file.Read(&TimerDetailsSize, sizeof(TimerDetailsSize));
+    file.Read(&Entries, sizeof(Entries));
+
+    if (TimerDetailsSize != sizeof(TIMER_DETAILS))
+    {
+        g_Notify->BreakPoint(__FILE__, __LINE__);
+        return;
+    }
+    if (Entries != sizeof(m_TimerDetatils) / sizeof(m_TimerDetatils[0]))
+    {
         g_Notify->BreakPoint(__FILE__, __LINE__);
         return;
     }
 
-    unzReadCurrentFile(file, (void *)&m_TimerDetatils, sizeof(m_TimerDetatils));
-    unzReadCurrentFile(file, (void *)&m_LastUpdate, sizeof(m_LastUpdate));
-    unzReadCurrentFile(file, &m_NextTimer, sizeof(m_NextTimer));
-    unzReadCurrentFile(file, (void *)&m_Current, sizeof(m_Current));
+    file.Read((void *)&m_TimerDetatils, sizeof(m_TimerDetatils));
+    file.Read((void *)&m_LastUpdate, sizeof(m_LastUpdate));
+    file.Read(&m_NextTimer, sizeof(m_NextTimer));
+    file.Read((void *)&m_Current, sizeof(m_Current));
 }
 
 void CSystemTimer::RecordDifference(CLog &LogFile, const CSystemTimer& rSystemTimer)

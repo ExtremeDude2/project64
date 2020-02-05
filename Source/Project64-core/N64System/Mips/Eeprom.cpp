@@ -72,24 +72,24 @@ void CEeprom::EepromCommand(uint8_t * Command)
         }
         break;
     case 4: // Read from Eeprom
-        if (Command[0] != 2 && bHaveDebugger())
+        if (Command[0] != 2 && HaveDebugger())
         {
-            g_Notify->DisplayError("What am I meant to do with this Eeprom Command");
+            ProcessingError(Command);
         }
-        if (Command[1] != 8 && bHaveDebugger())
+        if (Command[1] != 8 && HaveDebugger())
         {
-            g_Notify->DisplayError("What am I meant to do with this Eeprom Command");
+            ProcessingError(Command);
         }
         ReadFrom(&Command[4], Command[3]);
         break;
     case 5: //Write to Eeprom
-        if (Command[0] != 10 && bHaveDebugger())
+        if (Command[0] != 10 && HaveDebugger())
         {
-            g_Notify->DisplayError("What am I meant to do with this Eeprom Command");
+            ProcessingError(Command);
         }
-        if (Command[1] != 1 && bHaveDebugger())
+        if (Command[1] != 1 && HaveDebugger())
         {
-            g_Notify->DisplayError("What am I meant to do with this Eeprom Command");
+            ProcessingError(Command);
         }
         WriteTo(&Command[4], Command[3]);
         break;
@@ -126,13 +126,13 @@ void CEeprom::EepromCommand(uint8_t * Command)
         break;
     case 8:
         //Write RTC, unimplemented
-        if (g_Settings->LoadDword(Debugger_ShowPifErrors))
+        if (bShowPifRamErrors())
         {
             g_Notify->DisplayError("Write RTC, unimplemented");
         }
         break;
     default:
-        if (g_Settings->LoadDword(Debugger_ShowPifErrors))
+        if (bShowPifRamErrors())
         {
             g_Notify->DisplayError(stdstr_f("Unknown EepromCommand %d", Command[2]).c_str());
         }
@@ -143,9 +143,14 @@ void CEeprom::LoadEeprom()
 {
     memset(m_EEPROM, 0xFF, sizeof(m_EEPROM));
 
-    CPath FileName(g_Settings->LoadStringVal(Directory_NativeSave).c_str(), "");
-    FileName.SetName(g_Settings->LoadStringVal(Game_GameName).c_str());
-    FileName.SetExtension("eep");
+    CPath FileName(g_Settings->LoadStringVal(Directory_NativeSave).c_str(), stdstr_f("%s.eep", g_Settings->LoadStringVal(Game_GameName).c_str()).c_str());
+    if (g_Settings->LoadBool(Setting_UniqueSaveDir))
+    {
+        FileName.AppendDirectory(g_Settings->LoadStringVal(Game_UniqueSaveDir).c_str());
+    }
+#ifdef _WIN32
+    FileName.NormalizePath(CPath(CPath::MODULE_DIRECTORY));
+#endif
 
     if (!FileName.DirectoryExists())
     {
@@ -183,10 +188,6 @@ void CEeprom::ReadFrom(uint8_t * Buffer, int32_t line)
 
 void CEeprom::WriteTo(uint8_t * Buffer, int32_t line)
 {
-    if (m_ReadOnly)
-    {
-        return;
-    }
     int32_t i;
 
     if (!m_File.IsOpen())
@@ -197,7 +198,17 @@ void CEeprom::WriteTo(uint8_t * Buffer, int32_t line)
     {
         m_EEPROM[line * 8 + i] = Buffer[i];
     }
-    m_File.Seek(line * 8, CFile::begin);
-    m_File.Write(Buffer, 8);
-    m_File.Flush();
+    if (!m_ReadOnly)
+    {
+        m_File.Seek(line * 8, CFile::begin);
+        m_File.Write(Buffer, 8);
+    }
+}
+
+void CEeprom::ProcessingError(uint8_t * /*Command*/)
+{
+    if (bShowPifRamErrors())
+    {
+        g_Notify->DisplayError("What am I meant to do with this Eeprom Command");
+    }
 }

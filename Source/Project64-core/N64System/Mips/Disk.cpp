@@ -22,6 +22,8 @@
 #include <sys/time.h>
 #endif
 
+uint8_t dd_swapdelay;
+
 bool dd_write;
 bool dd_reset_hold;
 uint32_t dd_track_offset, dd_zone;
@@ -29,18 +31,16 @@ uint32_t dd_start_block, dd_current;
 
 void DiskCommand()
 {
-    if (g_Disk != NULL)
-        g_Reg->ASIC_STATUS |= DD_STATUS_DISK_PRES;
-
     //ASIC_CMD_STATUS - Commands
     uint32_t cmd = g_Reg->ASIC_CMD;
+    WriteTrace(TraceN64System, TraceDebug, "DD CMD %08X - DATA %08X", cmd, g_Reg->ASIC_DATA);
 
 #ifdef _WIN32
     SYSTEMTIME sysTime;
     ::GetLocalTime(&sysTime);
 
     //BCD format needed for 64DD RTC
-    uint8_t year = (uint8_t)(((sysTime.wYear / 10) << 4) | (sysTime.wYear % 10));
+    uint8_t year = (uint8_t)(((sysTime.wYear / 10 % 10) << 4) | (sysTime.wYear % 10));
     uint8_t month = (uint8_t)(((sysTime.wMonth / 10) << 4) | (sysTime.wMonth % 10));
     uint8_t day = (uint8_t)(((sysTime.wDay / 10) << 4) | (sysTime.wDay % 10));
     uint8_t hour = (uint8_t)(((sysTime.wHour / 10) << 4) | (sysTime.wHour % 10));
@@ -54,7 +54,7 @@ void DiskCommand()
     localtime_r(&ltime, &result);
 
     //BCD format needed for 64DD RTC
-    uint8_t year = (uint8_t)(((result.tm_year / 10) << 4) | (result.tm_year % 10));
+    uint8_t year = (uint8_t)(((result.tm_year / 10 % 10) << 4) | (result.tm_year % 10));
     uint8_t month = (uint8_t)((((result.tm_mon + 1) / 10) << 4) | ((result.tm_mon + 1) % 10));
     uint8_t day = (uint8_t)(((result.tm_mday / 10) << 4) | (result.tm_mday % 10));
     uint8_t hour = (uint8_t)(((result.tm_hour / 10) << 4) | (result.tm_hour % 10));
@@ -67,13 +67,11 @@ void DiskCommand()
     case 0x00010000:
         //Seek Read
         g_Reg->ASIC_CUR_TK = g_Reg->ASIC_DATA | 0x60000000;
-        DiskSetOffset();
         dd_write = false;
         break;
     case 0x00020000:
         //Seek Write
         g_Reg->ASIC_CUR_TK = g_Reg->ASIC_DATA | 0x60000000;
-        DiskSetOffset();
         dd_write = true;
         break;
     case 0x00080000:
@@ -81,7 +79,13 @@ void DiskCommand()
         g_Reg->ASIC_STATUS &= ~DD_STATUS_DISK_CHNG; break;
     case 0x00090000:
         //Unset Reset Bit
-        g_Reg->ASIC_STATUS &= ~DD_STATUS_RST_STATE; break;
+        g_Reg->ASIC_STATUS &= ~DD_STATUS_RST_STATE;
+        g_Reg->ASIC_STATUS &= ~DD_STATUS_DISK_CHNG;
+        //F-Zero X + Expansion Kit fix so it doesn't enable "swapping" at boot
+        dd_swapdelay = 0;
+        if (g_Disk != NULL)
+            g_Reg->ASIC_STATUS |= DD_STATUS_DISK_PRES;
+        break;
     case 0x00120000:
         //RTC Get Year & Month
         g_Reg->ASIC_DATA = (year << 24) | (month << 16); break;
@@ -100,7 +104,11 @@ void DiskCommand()
 void DiskReset(void)
 {
     //ASIC_HARD_RESET 0xAAAA0000
+    WriteTrace(TraceN64System, TraceDebug, "DD RESET");
     g_Reg->ASIC_STATUS |= DD_STATUS_RST_STATE;
+    dd_swapdelay = 0;
+    if (g_Disk != NULL)
+        g_Reg->ASIC_STATUS |= DD_STATUS_DISK_PRES;
 }
 
 void DiskBMControl(void)
@@ -159,6 +167,17 @@ void DiskGapSectorCheck()
             DiskBMUpdate();
         }
     }
+
+    if (!(g_Reg->ASIC_STATUS & DD_STATUS_DISK_PRES) && g_Disk != NULL && g_Settings->LoadBool(GameRunning_LoadingInProgress) == false)
+    {
+        dd_swapdelay++;
+        if (dd_swapdelay >= 50)
+        {
+            g_Reg->ASIC_STATUS |= (DD_STATUS_DISK_PRES | DD_STATUS_DISK_CHNG);
+            dd_swapdelay = 0;
+            WriteTrace(TraceN64System, TraceDebug, "DD SWAP DONE");
+        }
+    }
 }
 
 void DiskBMUpdate()
@@ -171,9 +190,9 @@ void DiskBMUpdate()
         //Write Data
         if (dd_current < SECTORS_PER_BLOCK)
         {
-            DiskBMWrite();
+            if (!DiskBMReadWrite(true))
+                g_Reg->ASIC_STATUS |= DD_STATUS_DATA_RQ;
             dd_current += 1;
-            g_Reg->ASIC_STATUS |= DD_STATUS_DATA_RQ;
         }
         else if (dd_current < SECTORS_PER_BLOCK + 1)
         {
@@ -181,10 +200,10 @@ void DiskBMUpdate()
             {
                 dd_start_block = 1 - dd_start_block;
                 dd_current = 0;
-                DiskBMWrite();
+                if (!DiskBMReadWrite(true))
+                    g_Reg->ASIC_STATUS |= DD_STATUS_DATA_RQ;
                 dd_current += 1;
                 g_Reg->ASIC_BM_STATUS &= ~DD_BM_STATUS_BLOCK;
-                g_Reg->ASIC_STATUS |= DD_STATUS_DATA_RQ;
             }
             else
             {
@@ -201,16 +220,17 @@ void DiskBMUpdate()
     else
     {
         //Read Data
-        if (((g_Reg->ASIC_CUR_TK >> 16) & 0x1FFF) == 6 && g_Reg->ASIC_CUR_SECTOR == 0)
+        if (((g_Reg->ASIC_CUR_TK >> 16) & 0x1FFF) == 6 && g_Reg->ASIC_CUR_SECTOR == 0 && g_Disk->GetCountry() != Country::UnknownCountry)
         {
+            //Copy Protection
             g_Reg->ASIC_STATUS &= ~DD_STATUS_DATA_RQ;
             g_Reg->ASIC_BM_STATUS |= DD_BM_STATUS_MICRO;
         }
         else if (dd_current < SECTORS_PER_BLOCK)
         {
-            DiskBMRead();
+            if (!DiskBMReadWrite(false))
+                g_Reg->ASIC_STATUS |= DD_STATUS_DATA_RQ;
             dd_current += 1;
-            g_Reg->ASIC_STATUS |= DD_STATUS_DATA_RQ;
         }
         else if (dd_current < SECTORS_PER_BLOCK + 4)
         {
@@ -239,76 +259,27 @@ void DiskBMUpdate()
     }
 }
 
-void DiskBMRead()
+bool DiskBMReadWrite(bool write)
 {
-    uint32_t sector = 0;
-    sector += dd_track_offset;
-    sector += dd_start_block * SECTORS_PER_BLOCK * ddZoneSecSize[dd_zone];
-    sector += (dd_current) * (((g_Reg->ASIC_HOST_SECBYTE & 0x00FF0000) >> 16) + 1);
-    WriteTrace(TraceN64System, TraceDebug, "READ  Block %d Sector %02X - %08X", ((g_Reg->ASIC_CUR_TK & 0x0FFF0000) >> 15) | dd_start_block, dd_current, sector);
-    g_Disk->SetDiskAddressBuffer(sector);
-    return;
-}
-
-void DiskBMWrite()
-{
-    uint32_t sector = 0;
-    sector += dd_track_offset;
-    sector += dd_start_block * SECTORS_PER_BLOCK * ddZoneSecSize[dd_zone];
-    sector += (dd_current) * (((g_Reg->ASIC_HOST_SECBYTE & 0x00FF0000) >> 16) + 1);
-    WriteTrace(TraceN64System, TraceDebug, "WRITE Block %d Sector %02X - %08X", ((g_Reg->ASIC_CUR_TK & 0x0FFF0000) >> 15) | dd_start_block, dd_current, sector);
-    g_Disk->SetDiskAddressBuffer(sector);
-    return;
-}
-
-void DiskSetOffset()
-{
-    uint16_t head = ((g_Reg->ASIC_CUR_TK >> 16) & 0x1000) >> 9; // Head * 8
+    //Returns true if error
+    uint16_t head = ((g_Reg->ASIC_CUR_TK >> 16) / 0x1000) & 1;
     uint16_t track = (g_Reg->ASIC_CUR_TK >> 16) & 0xFFF;
-    uint16_t tr_off = 0;
+    uint16_t block = dd_start_block;
+    uint16_t sector = dd_current;
+    uint16_t sectorsize = (((g_Reg->ASIC_HOST_SECBYTE & 0x00FF0000) >> 16) + 1);
+    
+    uint32_t addr = g_Disk->GetDiskAddressBlock(head, track, block, sector, sectorsize);
 
-    if (track >= 0x425)
+    if (addr == 0xFFFFFFFF)
     {
-        dd_zone = 7 + head;
-        tr_off = track - 0x425;
-    }
-    else if (track >= 0x390)
-    {
-        dd_zone = 6 + head;
-        tr_off = track - 0x390;
-    }
-    else if (track >= 0x2FB)
-    {
-        dd_zone = 5 + head;
-        tr_off = track - 0x2FB;
-    }
-    else if (track >= 0x266)
-    {
-        dd_zone = 4 + head;
-        tr_off = track - 0x266;
-    }
-    else if (track >= 0x1D1)
-    {
-        dd_zone = 3 + head;
-        tr_off = track - 0x1D1;
-    }
-    else if (track >= 0x13C)
-    {
-        dd_zone = 2 + head;
-        tr_off = track - 0x13C;
-    }
-    else if (track >= 0x9E)
-    {
-        dd_zone = 1 + head;
-        tr_off = track - 0x9E;
+        //Error
+        return true;
     }
     else
     {
-        dd_zone = 0 + head;
-        tr_off = track;
+        g_Disk->SetDiskAddressBuffer(addr);
+        return false;
     }
-
-    dd_track_offset = ddStartOffset[dd_zone] + tr_off * ddZoneSecSize[dd_zone] * SECTORS_PER_BLOCK * BLOCKS_PER_TRACK;
 }
 
 void DiskDMACheck(void)

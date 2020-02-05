@@ -10,12 +10,15 @@
 ****************************************************************************/
 #include "stdafx.h"
 #include "SettingsType-Cheats.h"
+#include <Project64-core\N64System\CheatClass.h>
 
 CIniFile * CSettingTypeCheats::m_CheatIniFile = NULL;
-stdstr   * CSettingTypeCheats::m_SectionIdent = NULL;
+std::string * CSettingTypeCheats::m_SectionIdent = NULL;
+bool CSettingTypeCheats::m_CheatsModified = false;
 
-CSettingTypeCheats::CSettingTypeCheats(const char * PostFix ) :
-    m_PostFix(PostFix)
+CSettingTypeCheats::CSettingTypeCheats(const char * PostFix, SettingID UserSetting) :
+    m_PostFix(PostFix),
+    m_UserSetting(UserSetting)
 {
 }
 
@@ -60,36 +63,33 @@ void CSettingTypeCheats::FlushChanges( void )
 void CSettingTypeCheats::GameChanged ( void * /*Data */ )
 {
     *m_SectionIdent = g_Settings->LoadStringVal(Game_IniKey);
+    m_CheatsModified = g_Settings->LoadBool(Cheat_Modified);
 }
 
-/*stdstr CSettingTypeCheats::FixName ( const char * Section, const char * Name )
-{
-}
-
-const char * CSettingTypeCheats::SectionName ( void ) const
-{
-return "";
-}
-
-void CSettingTypeCheats::UpdateSettings ( void *  )
-{
-g_Notify->BreakPoint(__FILE__, __LINE__);
-}*/
-
-bool CSettingTypeCheats::Load ( int /*Index*/, bool & /*Value*/ ) const
+bool CSettingTypeCheats::IsSettingSet(void) const
 {
     g_Notify->BreakPoint(__FILE__, __LINE__);
     return false;
 }
 
-bool CSettingTypeCheats::Load ( int /*Index*/, uint32_t & /*Value*/ ) const
+bool CSettingTypeCheats::Load (uint32_t /*Index*/, bool & /*Value*/ ) const
 {
     g_Notify->BreakPoint(__FILE__, __LINE__);
     return false;
 }
 
-bool CSettingTypeCheats::Load ( int Index,  stdstr & Value ) const
+bool CSettingTypeCheats::Load (uint32_t /*Index*/, uint32_t & /*Value*/ ) const
 {
+    g_Notify->BreakPoint(__FILE__, __LINE__);
+    return false;
+}
+
+bool CSettingTypeCheats::Load (uint32_t Index, std::string & Value ) const
+{
+    if (m_CheatsModified)
+    {
+        return g_Settings->LoadStringIndex(m_UserSetting, Index, Value);
+    }
     if (m_CheatIniFile == NULL)
     {
         return false;
@@ -99,50 +99,90 @@ bool CSettingTypeCheats::Load ( int Index,  stdstr & Value ) const
 }
 
 //return the default values
-void CSettingTypeCheats::LoadDefault ( int /*Index*/, bool & /*Value*/ ) const
+void CSettingTypeCheats::LoadDefault (uint32_t /*Index*/, bool & /*Value*/ ) const
 {
     g_Notify->BreakPoint(__FILE__, __LINE__);
 }
 
-void CSettingTypeCheats::LoadDefault ( int /*Index*/, uint32_t & /*Value*/ ) const
+void CSettingTypeCheats::LoadDefault (uint32_t /*Index*/, uint32_t & /*Value*/ ) const
 {
     g_Notify->BreakPoint(__FILE__, __LINE__);
 }
 
-void CSettingTypeCheats::LoadDefault ( int /*Index*/, stdstr & /*Value*/ ) const
+void CSettingTypeCheats::LoadDefault (uint32_t /*Index*/, std::string & /*Value*/ ) const
 {
     g_Notify->BreakPoint(__FILE__, __LINE__);
 }
 
 //Update the settings
-void CSettingTypeCheats::Save ( int /*Index*/, bool /*Value*/ )
+void CSettingTypeCheats::Save (uint32_t /*Index*/, bool /*Value*/ )
 {
     g_Notify->BreakPoint(__FILE__, __LINE__);
 }
 
-void CSettingTypeCheats::Save ( int /*Index*/, uint32_t /*Value*/ )
+void CSettingTypeCheats::Save (uint32_t /*Index*/, uint32_t /*Value*/ )
 {
     g_Notify->BreakPoint(__FILE__, __LINE__);
 }
 
-void CSettingTypeCheats::Save ( int Index, const stdstr & Value )
+void CSettingTypeCheats::Save (uint32_t Index, const std::string & Value )
 {
-    if (m_CheatIniFile == NULL) {  return;  }
-
-    stdstr_f Key("Cheat%d%s",Index,m_PostFix);
-    m_CheatIniFile->SaveString(m_SectionIdent->c_str(),Key.c_str(),Value.c_str());
+    if (!m_CheatsModified)
+    {
+        CopyCheats();
+        m_CheatsModified = true;
+        g_Settings->SaveBool(Cheat_Modified, true);
+    }
+    g_Settings->SaveStringIndex(m_UserSetting, Index, Value.c_str());
 }
 
-void CSettingTypeCheats::Save ( int Index, const char * Value )
+void CSettingTypeCheats::Save (uint32_t Index, const char * Value )
 {
-    if (m_CheatIniFile == NULL) {  return;  }
-
-    stdstr_f Key("Cheat%d%s",Index,m_PostFix);
-    m_CheatIniFile->SaveString(m_SectionIdent->c_str(),Key.c_str(),Value);
+    if (!m_CheatsModified)
+    {
+        CopyCheats();
+        m_CheatsModified = true;
+        g_Settings->SaveBool(Cheat_Modified, true);
+    }
+    g_Settings->SaveStringIndex(m_UserSetting, Index, Value);
 }
 
-void CSettingTypeCheats::Delete ( int Index )
+void CSettingTypeCheats::Delete (uint32_t Index )
 {
-    stdstr_f Key("Cheat%d%s",Index,m_PostFix);
-    m_CheatIniFile->SaveString(m_SectionIdent->c_str(),Key.c_str(),NULL);
+    if (!m_CheatsModified)
+    {
+        CopyCheats();
+        m_CheatsModified = true;
+        g_Settings->SaveBool(Cheat_Modified, true);
+    }
+    g_Settings->DeleteSettingIndex(m_UserSetting, Index);
+}
+
+void CSettingTypeCheats::CopyCheats(void)
+{
+    for (int i = 0; i < CCheats::MaxCheats; i++)
+    {
+        std::string Value;
+        if (!g_Settings->LoadStringIndex(Cheat_Entry, i, Value))
+        {
+            break;
+        }
+        g_Settings->SaveStringIndex(Cheat_UserEntry, i, Value);
+        if (g_Settings->LoadStringIndex(Cheat_Notes, i, Value))
+        {
+            g_Settings->SaveStringIndex(Cheat_UserNotes, i, Value);
+        }
+        if (g_Settings->LoadStringIndex(Cheat_Options, i, Value))
+        {
+            g_Settings->SaveStringIndex(Cheat_UserOptions, i, Value);
+        }
+        if (g_Settings->LoadStringIndex(Cheat_Range, i, Value))
+        {
+            g_Settings->SaveStringIndex(Cheat_UserRange, i, Value);
+        }
+        if (g_Settings->LoadStringIndex(Cheat_RangeNotes, i, Value))
+        {
+            g_Settings->SaveStringIndex(Cheat_UserRangeNotes, i, Value);
+        }
+    }
 }

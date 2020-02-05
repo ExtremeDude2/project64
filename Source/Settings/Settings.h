@@ -16,6 +16,9 @@ extern "C" {
     void SetSetting(short SettingID, unsigned int Value);
     void SetSettingSz(short SettingID, const char * Value);
 
+    void SetSystemSetting(short SettingID, unsigned int Value);
+    void SetSystemSettingSz(short SettingID, const char * Value);
+
     // enum's
     enum SETTING_DATA_TYPE
     {
@@ -41,6 +44,22 @@ extern "C" {
     // this must be implemented to be notified when a setting is used but has not been set up
     void UseUnregisteredSetting(int SettingID);
 
+    typedef void(*SettingChangedFunc)(void *);
+    void SettingsRegisterChange(bool SystemSetting, int Type, void * Data, SettingChangedFunc Func);
+    void SettingsUnregisterChange(bool SystemSetting, int Type, void * Data, SettingChangedFunc Func);
+
 #if defined(__cplusplus)
 }
 #endif
+
+class CNotification
+{
+public:
+    static void DisplayError(const char * Message);
+    static void FatalError(const char * Message);
+    static void DisplayMessage(int DisplayTime, const char * Message);
+    static void DisplayMessage2(const char * Message);
+    static void BreakPoint(const char * FileName, int LineNumber);
+};
+
+extern CNotification * g_Notify;

@@ -10,7 +10,9 @@
 ****************************************************************************/
 #pragma once
 
+#include <Common/Random.h>
 #include <Common/SyncEvent.h>
+#include <Common/Thread.h>
 #include <Project64-core/Settings/N64SystemSettings.h>
 #include <Project64-core/N64System/ProfilingClass.h>
 #include <Project64-core/N64System/Recompiler/RecompilerClass.h>
@@ -18,6 +20,7 @@
 #include <Project64-core/N64System/Mips/MemoryVirtualMem.h>
 #include <Project64-core/N64System/Mips/SystemEvents.h>
 #include <Project64-core/N64System/Mips/SystemTiming.h>
+#include <Project64-core/N64System/Mips/Mempak.h>
 #include <Project64-core/Settings/DebugSettings.h>
 #include <Project64-core/Plugin.h>
 #include <Project64-core/Logging.h>
@@ -46,26 +49,32 @@ class CN64System :
     protected CDebugSettings
 {
 public:
-    CN64System(CPlugins * Plugins, bool SavesReadOnly);
+    CN64System(CPlugins * Plugins, uint32_t randomizer_seed, bool SavesReadOnly, bool SyncSystem);
     virtual ~CN64System(void);
 
-    CProfiling m_Profile;
     CCheats    m_Cheats;
     bool  m_EndEmulation;
     SAVE_CHIP_TYPE m_SaveUsing;
 
     //Methods
+    static bool LoadFileImage(const char * FileLoc);
+    static bool LoadFileImageIPL(const char * FileLoc);
+    static bool LoadDiskImage(const char * FileLoc, const bool Expansion);
+    static bool SelectAndLoadFileImageIPL(Country country, bool combo);
     static bool RunFileImage(const char * FileLoc);
-    static bool RunFileImageIPL(const char * FileLoc);
     static bool RunDiskImage(const char * FileLoc);
+    static bool RunDiskComboImage(const char * FileLoc, const char * FileLocDisk);
+    static void RunLoadedImage(void);
     static void CloseSystem(void);
 
     void   CloseCpu();
     void   ExternalEvent(SystemEvent action); //covers gui interacting and timers etc..
     void   StartEmulation(bool NewThread);
-    void   SyncToAudio();
-    void   IncreaseSpeed() { m_Limiter.IncreaseSpeed(); }
-    void   DecreaseSpeed() { m_Limiter.DecreaseSpeed(); }
+    void   EndEmulation();
+    void   AlterSpeed(const CSpeedLimiter::ESpeedChange SpeedChange) { m_Limiter.AlterSpeed(SpeedChange); }
+    void   SetSpeed(int Speed) { m_Limiter.SetSpeed(Speed); }
+    int    GetSpeed(void) const { return m_Limiter.GetSpeed(); }
+    int    GetBaseSpeed(void) const { return m_Limiter.GetBaseSpeed(); }
     void   Reset(bool bInitReg, bool ClearMenory);
     void   GameReset();
     void   PluginReset();
@@ -81,6 +90,7 @@ public:
     void   SetCheatsSlectionChanged(bool changed) { m_CheatsSlectionChanged = changed; }
     bool   HasCheatsSlectionChanged(void) const { return m_CheatsSlectionChanged; }
     uint32_t  GetButtons(int32_t Control) const { return m_Buttons[Control]; }
+    CPlugins * GetPlugins() { return m_Plugins; }
 
     //Variable used to track that the SP is being handled and stays the same as the real SP in sync core
 #ifdef TEST_SP_TRACKING
@@ -94,23 +104,19 @@ public:
     void   SyncSystemPC();
 private:
     //Make sure plugins can directly access this information
-    friend CGfxPlugin;
-    friend CAudioPlugin;
-    friend CRSP_Plugin;
-    friend CControl_Plugin;
+    friend class CGfxPlugin;
+    friend class CAudioPlugin;
+    friend class CRSP_Plugin;
+    friend class CControl_Plugin;
 
     //Recompiler has access to manipulate and call functions
-    friend CSystemTimer;
+    friend class CSystemTimer;
+    friend class CRecompiler;
+    friend class CMipsMemoryVM;
 
     //Used for loading and potentially executing the CPU in its own thread.
-    struct ThreadInfo
-    {
-        void** ThreadHandle;
-        uint32_t ThreadID;
-    };
-
-    static void StartEmulationThread(ThreadInfo * Info);
-    static bool EmulationStarting(void * hThread, uint32_t ThreadId);
+    static void StartEmulationThread(CThread * thread);
+    static bool EmulationStarting(CThread * thread);
     static void StartEmulationThead();
 
     void   ExecuteCPU();
@@ -140,6 +146,7 @@ private:
     CMipsMemoryVM   m_MMU_VM;   //Memory of the n64
     CTLB            m_TLB;
     CRegisters      m_Reg;
+    CMempak         m_Mempak;
     CFramePerSecond m_FPS;
     CProfiling      m_CPU_Usage; //used to track the cpu usage
     CRecompiler   * m_Recomp;
@@ -149,7 +156,6 @@ private:
     int32_t         m_NextTimer;
     CSystemTimer    m_SystemTimer;
     bool            m_bCleanFrameBox;
-    bool            m_bInitialized;
     bool            m_RspBroke;
     bool            m_DMAUsed;
     uint32_t        m_Buttons[4];
@@ -159,15 +165,16 @@ private:
     uint32_t        m_TLBLoadAddress;
     uint32_t        m_TLBStoreAddress;
     uint32_t        m_SyncCount;
+    bool            m_SyncCpu;
     bool            m_CheatsSlectionChanged;
+    CRandom         m_Random;
 
     //When Syncing cores this is the PC where it last Sync'ed correctly
     uint32_t m_LastSuccessSyncPC[10];
     int32_t  m_CyclesToSkip;
 
     //Handle to the cpu thread
-    void * m_CPU_Handle;
-    uint32_t  m_CPU_ThreadID;
+    CThread * m_thread;
 
     //Handle to pause mutex
     SyncEvent m_hPauseEvent;

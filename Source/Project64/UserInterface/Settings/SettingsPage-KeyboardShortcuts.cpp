@@ -13,7 +13,7 @@
 #include "SettingsPage.h"
 
 COptionsShortCutsPage::COptionsShortCutsPage(HWND hParent, const RECT & rcDispay) :
-m_EnableReset(false)
+    m_EnableReset(false)
 {
     if (!Create(hParent, rcDispay))
     {
@@ -37,9 +37,9 @@ m_EnableReset(false)
 
     m_MenuItems.ModifyStyle(0, TVS_SHOWSELALWAYS);
 
-    m_CpuState.SetItemData(m_CpuState.AddStringW(wGS(ACCEL_CPUSTATE_1).c_str()), CMenuShortCutKey::GAME_NOT_RUNNING);
-    m_CpuState.SetItemData(m_CpuState.AddStringW(wGS(ACCEL_CPUSTATE_3).c_str()), CMenuShortCutKey::GAME_RUNNING_WINDOW);
-    m_CpuState.SetItemData(m_CpuState.AddStringW(wGS(ACCEL_CPUSTATE_4).c_str()), CMenuShortCutKey::GAME_RUNNING_FULLSCREEN);
+    m_CpuState.SetItemData(m_CpuState.AddStringW(wGS(ACCEL_CPUSTATE_1).c_str()), CMenuShortCutKey::RUNNING_STATE_NOT_RUNNING);
+    m_CpuState.SetItemData(m_CpuState.AddStringW(wGS(ACCEL_CPUSTATE_3).c_str()), CMenuShortCutKey::RUNNING_STATE_WINDOWED);
+    m_CpuState.SetItemData(m_CpuState.AddStringW(wGS(ACCEL_CPUSTATE_4).c_str()), CMenuShortCutKey::RUNNING_STATE_FULLSCREEN);
     m_CpuState.SetCurSel(0);
 
     int VirtualKeyListSize;
@@ -74,18 +74,18 @@ void COptionsShortCutsPage::CheckResetEnable(void)
 
 void COptionsShortCutsPage::OnCpuStateChanged(UINT /*Code*/, int /*id*/, HWND /*ctl*/)
 {
-    ACCESS_MODE AccessLevel = (ACCESS_MODE)m_CpuState.GetItemData(m_CpuState.GetCurSel());
+    RUNNING_STATE RunningState = (RUNNING_STATE)m_CpuState.GetItemData(m_CpuState.GetCurSel());
 
     MSC_MAP & ShortCuts = m_ShortCuts.GetShortCuts();
     m_MenuItems.DeleteAllItems();
 
     for (MSC_MAP::iterator Item = ShortCuts.begin(); Item != ShortCuts.end(); Item++)
     {
-        ACCESS_MODE ItemMode = Item->second.AccessMode();
-        if ((ItemMode & AccessLevel) != AccessLevel)
+        if (!Item->second.Avaliable(RunningState))
         {
             continue;
         }
+
         //find Parent
         HTREEITEM hParent = m_MenuItems.GetChildItem(TVI_ROOT);
         while (hParent)
@@ -137,13 +137,13 @@ void COptionsShortCutsPage::OnRemoveClicked(UINT /*Code*/, int /*id*/, HWND /*ct
     HTREEITEM hSelectedItem = m_MenuItems.GetSelectedItem();
     if (hSelectedItem == NULL)
     {
-        g_Notify->DisplayError(GS(MSG_NO_SEL_SHORTCUT));
+        g_Notify->DisplayWarning(GS(MSG_NO_SEL_SHORTCUT));
         return;
     }
     HTREEITEM hParent = m_MenuItems.GetParentItem(hSelectedItem);
     if (hParent == NULL)
     {
-        g_Notify->DisplayError(GS(MSG_NO_SEL_SHORTCUT));
+        g_Notify->DisplayWarning(GS(MSG_NO_SEL_SHORTCUT));
         return;
     }
 
@@ -153,7 +153,7 @@ void COptionsShortCutsPage::OnRemoveClicked(UINT /*Code*/, int /*id*/, HWND /*ct
     int index = m_CurrentKeys.GetCurSel();
     if (index < 0)
     {
-        g_Notify->DisplayError(GS(MSG_NO_SEL_SHORTCUT));
+        g_Notify->DisplayWarning(GS(MSG_NO_SEL_SHORTCUT));
         return;
     }
     ShortCut->RemoveItem((CMenuShortCutKey *)m_CurrentKeys.GetItemData(index));
@@ -176,7 +176,7 @@ void COptionsShortCutsPage::OnAssignClicked(UINT /*Code*/, int /*id*/, HWND /*ct
     int index = m_VirtualKeyList.GetCurSel();
     if (index < 0)
     {
-        g_Notify->DisplayError(GS(MSG_NO_SHORTCUT_SEL));
+        g_Notify->DisplayWarning(GS(MSG_NO_SHORTCUT_SEL));
         return;
     }
 
@@ -185,30 +185,37 @@ void COptionsShortCutsPage::OnAssignClicked(UINT /*Code*/, int /*id*/, HWND /*ct
     bool bAlt = (SendDlgItemMessage(IDC_ALT, BM_GETCHECK, 0, 0) == BST_CHECKED);
     bool bShift = (SendDlgItemMessage(IDC_SHIFT, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
-    ACCESS_MODE AccessLevel = (ACCESS_MODE)m_CpuState.GetItemData(m_CpuState.GetCurSel());
+    RUNNING_STATE RunningState = (RUNNING_STATE)m_CpuState.GetItemData(m_CpuState.GetCurSel());
 
     HTREEITEM hSelectedItem = m_MenuItems.GetSelectedItem();
     if (hSelectedItem == NULL)
     {
-        g_Notify->DisplayError(GS(MSG_NO_MENUITEM_SEL));
+        g_Notify->DisplayWarning(GS(MSG_NO_MENUITEM_SEL));
         return;
     }
     HTREEITEM hParent = m_MenuItems.GetParentItem(hSelectedItem);
     if (hParent == NULL)
     {
-        g_Notify->DisplayError(GS(MSG_NO_MENUITEM_SEL));
+        g_Notify->DisplayWarning(GS(MSG_NO_MENUITEM_SEL));
         return;
     }
 
     CShortCutItem * ShortCut = (CShortCutItem *)m_MenuItems.GetItemData(hSelectedItem);
-
-    LanguageStringID strid = m_ShortCuts.GetMenuItemName(key, bCtrl, bAlt, bShift, AccessLevel);
+    LanguageStringID strid = m_ShortCuts.GetMenuItemName(key, bCtrl, bAlt, bShift, RunningState);
     if (strid != EMPTY_STRING)
     {
-        g_Notify->DisplayError(GS(MSG_MENUITEM_ASSIGNED));
+        g_Notify->DisplayWarning(GS(MSG_MENUITEM_ASSIGNED));
         return;
     }
-    ShortCut->AddShortCut(key, bCtrl, bAlt, bShift, AccessLevel, true, false);
+
+    CMenuShortCutKey::ACCESS_MODE AccessMode = CMenuShortCutKey::ACCESS_NONE;
+    switch (RunningState)
+    {
+    case CMenuShortCutKey::RUNNING_STATE_NOT_RUNNING: AccessMode = CMenuShortCutKey::ACCESS_GAME_NOT_RUNNING; break;
+    case CMenuShortCutKey::RUNNING_STATE_WINDOWED: AccessMode = CMenuShortCutKey::ACCESS_GAME_RUNNING; break;
+    case CMenuShortCutKey::RUNNING_STATE_FULLSCREEN: AccessMode = CMenuShortCutKey::ACCESS_GAME_RUNNING_FULLSCREEN; break;
+    }
+    ShortCut->AddShortCut(key, bCtrl, bAlt, bShift, AccessMode, true, false);
     m_MenuItems.SetItemState(hSelectedItem, TVIS_BOLD, TVIS_BOLD);
     m_MenuItems.SetItemState(hParent, TVIS_BOLD, TVIS_BOLD);
     m_EnableReset = true;
@@ -227,9 +234,9 @@ void COptionsShortCutsPage::OnShortCutChanged(UINT /*Code*/, int /*id*/, HWND /*
     bool bAlt = (SendDlgItemMessage(IDC_ALT, BM_GETCHECK, 0, 0) == BST_CHECKED);
     bool bShift = (SendDlgItemMessage(IDC_SHIFT, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
-    ACCESS_MODE AccessLevel = (ACCESS_MODE)m_CpuState.GetItemData(m_CpuState.GetCurSel());
+    RUNNING_STATE RunningState = (RUNNING_STATE)m_CpuState.GetItemData(m_CpuState.GetCurSel());
 
-    stdstr str = GS(m_ShortCuts.GetMenuItemName(key, bCtrl, bAlt, bShift, AccessLevel));
+    stdstr str = GS(m_ShortCuts.GetMenuItemName(key, bCtrl, bAlt, bShift, RunningState));
     if (str.length() > 0)
     {
         str.resize(std::remove(str.begin(), str.end(), '&') - str.begin());
@@ -255,7 +262,7 @@ void COptionsShortCutsPage::RefreshShortCutOptions(HTREEITEM hItem)
         return;
     }
 
-    ACCESS_MODE AccessLevel = (ACCESS_MODE)m_CpuState.GetItemData(m_CpuState.GetCurSel());
+    RUNNING_STATE RunningState = (RUNNING_STATE)m_CpuState.GetItemData(m_CpuState.GetCurSel());
     CShortCutItem * ShortCut = (CShortCutItem *)m_MenuItems.GetItemData(hItem);
 
     m_CurrentKeys.ResetContent();
@@ -263,16 +270,11 @@ void COptionsShortCutsPage::RefreshShortCutOptions(HTREEITEM hItem)
     const SHORTCUT_KEY_LIST & ShortCutList = ShortCut->GetAccelItems();
     for (SHORTCUT_KEY_LIST::const_iterator ShortCut_item = ShortCutList.begin(); ShortCut_item != ShortCutList.end(); ShortCut_item++)
     {
-        if (ShortCut_item->Inactive())
+        if (ShortCut_item->Inactive() || !ShortCut_item->Active(RunningState))
         {
             continue;
         }
 
-        ACCESS_MODE ItemMode = ShortCut_item->AccessMode();
-        if ((ItemMode & AccessLevel) != AccessLevel)
-        {
-            continue;
-        }
         stdstr Name = ShortCut_item->Name();
         m_CurrentKeys.SetItemData(m_CurrentKeys.AddString(Name.c_str()), (DWORD_PTR)&*ShortCut_item);
     }
@@ -356,7 +358,7 @@ void COptionsShortCutsPage::ShowPage()
 void COptionsShortCutsPage::ApplySettings(bool /*UpdateScreen*/)
 {
     m_ShortCuts.Save();
-    g_Settings->SaveBool(Info_ShortCutsChanged, true);
+    UISettingsSaveBool(Info_ShortCutsChanged, true);
 }
 
 bool COptionsShortCutsPage::EnableReset(void)

@@ -11,11 +11,12 @@
 #pragma once
 #include "JumpInfo.h"
 #include <Project64-core/N64System/Recompiler/RecompilerOps.h>
+#include <Project64-core/Settings/DebugSettings.h>
 
 class CCodeBlock;
 
 class CCodeSection :
-    private CRecompilerOps
+    private CDebugSettings
 {
 public:
     typedef std::list<CCodeSection *> SECTION_LIST;
@@ -26,12 +27,9 @@ public:
     void SetDelaySlot();
     void SetJumpAddress(uint32_t JumpPC, uint32_t TargetPC, bool PermLoop);
     void SetContinueAddress(uint32_t JumpPC, uint32_t TargetPC);
-    void CompileCop1Test();
-    bool GenerateX86Code(uint32_t Test);
+    bool GenerateNativeCode(uint32_t Test);
     void GenerateSectionLinkage();
-    void CompileExit(uint32_t JumpPC, uint32_t TargetPC, CRegInfo &ExitRegSet, CExitInfo::EXIT_REASON reason, bool CompileNow, void(*x86Jmp)(const char * Label, uint32_t Value));
     void DetermineLoop(uint32_t Test, uint32_t Test2, uint32_t TestID);
-    bool FixConstants(uint32_t Test);
     CCodeSection * ExistingSection(uint32_t Addr, uint32_t Test);
     bool SectionAccessible(uint32_t SectionId, uint32_t Test);
     bool DisplaySectionInformation(uint32_t ID, uint32_t Test);
@@ -54,6 +52,7 @@ public:
     uint8_t          * m_CompiledLocation;
     bool               m_InLoop;
     bool               m_DelaySlot;
+    CRecompilerOps * & m_RecompilerOps;
 
     /* Register Info */
     CRegInfo    m_RegEnter;
@@ -70,9 +69,7 @@ private:
     void UnlinkParent(CCodeSection * Parent, bool ContinueSection);
     void InheritConstants();
     void TestRegConstantStates(CRegInfo & Base, CRegInfo & Reg);
-    void SyncRegState(const CRegInfo & SyncTo);
     bool IsAllParentLoops(CCodeSection * Parent, bool IgnoreIfCompiled, uint32_t Test);
     bool ParentContinue();
-    bool InheritParentInfo();
     bool SetupRegisterForLoop();
 };

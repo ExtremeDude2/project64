@@ -13,16 +13,18 @@ public:
         MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
         COMMAND_CODE_HANDLER(BN_CLICKED, OnClicked)
         NOTIFY_HANDLER_EX(IDC_PAGELIST, TVN_SELCHANGED, OnPageListItemChanged)
+        NOTIFY_HANDLER_EX(IDC_PAGELIST, NM_CLICK, OnPageListClicked)
         MESSAGE_HANDLER_EX(PSM_CHANGED, OnSettingPageChanged)
         REFLECT_NOTIFICATIONS()
-        END_MSG_MAP()
+    END_MSG_MAP()
 
-        enum { IDD = IDD_Settings_Config };
+    enum { IDD = IDD_Settings_Config };
 
-        LRESULT	OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-        LRESULT	OnClicked(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled);
-        LRESULT OnPageListItemChanged(NMHDR* phdr);
-        LRESULT	OnSettingPageChanged(UINT /*uMsg*/, WPARAM wPage, LPARAM /*lParam*/);
+    LRESULT	OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+    LRESULT	OnClicked(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled);
+    LRESULT OnPageListItemChanged(NMHDR* phdr);
+    LRESULT OnPageListClicked(NMHDR* phdr);
+    LRESULT	OnSettingPageChanged(UINT /*uMsg*/, WPARAM wPage, LPARAM /*lParam*/);
 
 public:
     CSettingConfig(bool bJustGameSetting = false);
@@ -32,7 +34,7 @@ public:
     void UpdateAdvanced(bool AdvancedMode);
 
 private:
-    bool UpdateAdvanced(bool AdvancedMode, HTREEITEM hItem);
+    void UpdateAdvanced(bool AdvancedMode, HTREEITEM hItem);
     void ApplySettings(bool UpdateScreen);
     void BoldChangedPages(HTREEITEM hItem);
 
@@ -40,6 +42,7 @@ private:
 
     CTreeViewCtrl    m_PagesTreeList;
     SETTING_SECTIONS m_Sections;
-    CSettingsPage *  m_CurrentPage, *m_GeneralOptionsPage, *m_AdvancedPage;
+    CSettingsPage *  m_CurrentPage, *m_GeneralOptionsPage, *m_AdvancedPage, *m_DefaultsPage, *m_DiskDrivePage;
     bool             m_GameConfig;
+    bool             m_bTVNSelChangedSupported;
 };

@@ -16,9 +16,12 @@
 #include <Project64-core/Plugins/AudioPlugin.h>
 #include <Project64-core/Plugins/RSPPlugin.h>
 #include <Project64-core/Plugins/ControllerPlugin.h>
+#include <Project64-core/N64System/SystemGlobals.h>
+#include <Project64-core/N64System/Recompiler/RecompilerClass.h>
 #include <stdlib.h>
 
-CCheats::CCheats()
+CCheats::CCheats(CMipsMemoryVM & MMU) :
+    m_MMU(MMU)
 {
 }
 
@@ -26,15 +29,26 @@ CCheats::~CCheats()
 {
 }
 
-bool CCheats::LoadCode(int CheatNo, const char * CheatString)
+bool CCheats::LoadCode(const stdstr & CheatEntry, SettingID ExtensionSetting, int ExtensionIndex)
 {
+    //Find the start and end of the name which is surrounded in ""
+    int StartOfName = CheatEntry.find("\"");
+    if (StartOfName == -1)
+    {
+        return false;
+    }
+    int EndOfName = CheatEntry.find("\"", StartOfName + 1);
+    if (EndOfName == -1)
+    {
+        return false;
+    }
+    const char * CheatString = &CheatEntry.c_str()[EndOfName + 2];
     if (!IsValid16BitCode(CheatString))
     {
         return false;
     }
 
     const char * ReadPos = CheatString;
-
     CODES Code;
     while (ReadPos)
     {
@@ -47,26 +61,32 @@ bool CCheats::LoadCode(int CheatNo, const char * CheatString)
 
         if (strncmp(ReadPos, "????", 4) == 0)
         {
-            if (CheatNo < 0 || CheatNo > MaxCheats) { return false; }
-            stdstr CheatExt = g_Settings->LoadStringIndex(Cheat_Extension, CheatNo);
-            if (CheatExt.empty()) { return false; }
-            CodeEntry.Value = CheatExt[0] == '$' ? (uint16_t)strtoul(&CheatExt.c_str()[1], 0, 16) : (uint16_t)atol(CheatExt.c_str());
+			stdstr Extension;
+			if (!g_Settings->LoadStringIndex(ExtensionSetting, ExtensionIndex, Extension) || Extension.length() == 0)
+			{
+				return false;
+			}
+            CodeEntry.Value = Extension[0] == '$' ? (uint16_t)strtoul(&Extension[1], 0, 16) : (uint16_t)atol(Extension.c_str());
         }
         else if (strncmp(ReadPos, "??", 2) == 0)
         {
-            if (CheatNo < 0 || CheatNo > MaxCheats) { return false; }
-            stdstr CheatExt = g_Settings->LoadStringIndex(Cheat_Extension, CheatNo);
-            if (CheatExt.empty()) { return false; }
-            CodeEntry.Value = (uint8_t)(strtoul(ReadPos, 0, 16));
-            CodeEntry.Value |= (CheatExt[0] == '$' ? (uint8_t)strtoul(&CheatExt.c_str()[1], 0, 16) : (uint8_t)atol(CheatExt.c_str())) << 16;
+			stdstr Extension;
+			if (!g_Settings->LoadStringIndex(ExtensionSetting, ExtensionIndex, Extension) || Extension.length() == 0)
+			{
+				return false;
+			}
+			CodeEntry.Value = (uint8_t)(strtoul(ReadPos, 0, 16));
+            CodeEntry.Value |= (Extension[0] == '$' ? (uint8_t)strtoul(&Extension[1], 0, 16) : (uint8_t)atol(Extension.c_str())) << 16;
         }
         else if (strncmp(&ReadPos[2], "??", 2) == 0)
         {
-            if (CheatNo < 0 || CheatNo > MaxCheats) { return false; }
-            stdstr CheatExt = g_Settings->LoadStringIndex(Cheat_Extension, CheatNo);
-            if (CheatExt.empty()) { return false; }
-            CodeEntry.Value = (uint16_t)(strtoul(ReadPos, 0, 16) << 16);
-            CodeEntry.Value |= CheatExt[0] == '$' ? (uint8_t)strtoul(&CheatExt.c_str()[1], 0, 16) : (uint8_t)atol(CheatExt.c_str());
+			stdstr Extension;
+			if (!g_Settings->LoadStringIndex(ExtensionSetting, ExtensionIndex, Extension) || Extension.length() == 0)
+			{
+				return false;
+			}
+			CodeEntry.Value = (uint16_t)(strtoul(ReadPos, 0, 16) << 16);
+            CodeEntry.Value |= Extension[0] == '$' ? (uint8_t)strtoul(&Extension[1], 0, 16) : (uint8_t)atol(Extension.c_str());
         }
         else
         {
@@ -90,46 +110,68 @@ bool CCheats::LoadCode(int CheatNo, const char * CheatString)
     return true;
 }
 
+void CCheats::LoadEnhancements(void)
+{
+    if (!g_Settings->LoadBool(Setting_Enhancement))
+    {
+        return;
+    }
+    for (int i = 0; i < CCheats::MaxCheats; i++)
+	{
+		std::string Name = g_Settings->LoadStringIndex(Enhancement_Name, i);
+		if (Name.length() == 0) { break; }
+
+		if (!g_Settings->LoadBoolIndex(Enhancement_Gameshark, i))
+		{
+			continue;
+		}
+		std::string entry = g_Settings->LoadStringIndex(Enhancement_GamesharkCode, i);
+		stdstr_f CheatEntry("\"Enhancement%d\",%s", i, entry.c_str());
+		LoadCode(CheatEntry.c_str(), Default_None, 0);
+	}
+
+}
+
 void CCheats::LoadPermCheats(CPlugins * Plugins)
 {
     if (g_Settings->LoadBool(Debugger_DisableGameFixes))
     {
         return;
     }
-    for (int CheatNo = 0; CheatNo < MaxCheats; CheatNo++)
+    for (int i = 0; i < MaxCheats; i++)
     {
         stdstr LineEntry;
-        if (!g_Settings->LoadStringIndex(Rdb_GameCheatFix, CheatNo, LineEntry) || LineEntry.empty())
+        if (!g_Settings->LoadStringIndex(Rdb_GameCheatFix, i, LineEntry) || LineEntry.empty())
         {
             break;
         }
 
         stdstr CheatPlugins;
         bool LoadEntry = true;
-        if (g_Settings->LoadStringIndex(Rdb_GameCheatFixPlugin, CheatNo, CheatPlugins) && !CheatPlugins.empty())
+        if (g_Settings->LoadStringIndex(Rdb_GameCheatFixPlugin, i, CheatPlugins) && !CheatPlugins.empty())
         {
             LoadEntry = false;
 
             strvector PluginList = CheatPlugins.Tokenize(',');
-            for (size_t i = 0, n = PluginList.size(); i < n; i++)
+            for (size_t p = 0, n = PluginList.size(); p < n; p++)
             {
-                stdstr PluginName = PluginList[i].Trim();
-                if (strstr(Plugins->Gfx()->PluginName(), PluginName.c_str()) != NULL)
+                stdstr PluginName = PluginList[p].Trim();
+                if (Plugins->Gfx() != NULL && strstr(Plugins->Gfx()->PluginName(), PluginName.c_str()) != NULL)
                 {
                     LoadEntry = true;
                     break;
                 }
-                if (strstr(Plugins->Audio()->PluginName(), PluginName.c_str()) != NULL)
+                if (Plugins->Audio() != NULL && strstr(Plugins->Audio()->PluginName(), PluginName.c_str()) != NULL)
                 {
                     LoadEntry = true;
                     break;
                 }
-                if (strstr(Plugins->RSP()->PluginName(), PluginName.c_str()) != NULL)
+                if (Plugins->RSP() != NULL && strstr(Plugins->RSP()->PluginName(), PluginName.c_str()) != NULL)
                 {
                     LoadEntry = true;
                     break;
                 }
-                if (strstr(Plugins->Control()->PluginName(), PluginName.c_str()) != NULL)
+                if (Plugins->Control() != NULL && strstr(Plugins->Control()->PluginName(), PluginName.c_str()) != NULL)
                 {
                     LoadEntry = true;
                     break;
@@ -139,15 +181,17 @@ void CCheats::LoadPermCheats(CPlugins * Plugins)
 
         if (LoadEntry)
         {
-            LoadCode(-1, LineEntry.c_str());
+			stdstr_f CheatEntry("\"PermCheat%d\",%s", i, LineEntry.c_str());
+			LoadCode(CheatEntry.c_str(), Default_None, 0);
         }
     }
 }
 
 void CCheats::LoadCheats(bool DisableSelected, CPlugins * Plugins)
 {
-    m_Codes.clear();
+    ResetCodes();
     LoadPermCheats(Plugins);
+	LoadEnhancements();
 
     for (int CheatNo = 0; CheatNo < MaxCheats; CheatNo++)
     {
@@ -163,13 +207,7 @@ void CCheats::LoadCheats(bool DisableSelected, CPlugins * Plugins)
             continue;
         }
 
-        //Find the start and end of the name which is surrounded in ""
-        int StartOfName = LineEntry.find("\"");
-        if (StartOfName == -1) { continue; }
-        int EndOfName = LineEntry.find("\"", StartOfName + 1);
-        if (EndOfName == -1) { continue; }
-
-        LoadCode(CheatNo, &LineEntry.c_str()[EndOfName + 2]);
+        LoadCode(LineEntry, Cheat_Extension, CheatNo);
     }
 }
 
@@ -211,21 +249,21 @@ uint16_t ConvertXP64Value(uint16_t Value)
     return tmpValue;
 }
 
-void CCheats::ApplyCheats(CMipsMemoryVM * MMU)
+void CCheats::ApplyCheats()
 {
     for (size_t CurrentCheat = 0; CurrentCheat < m_Codes.size(); CurrentCheat++)
     {
-        const CODES & CodeEntry = m_Codes[CurrentCheat];
+        CODES & CodeEntry = m_Codes[CurrentCheat];
         for (size_t CurrentEntry = 0; CurrentEntry < CodeEntry.size();)
         {
-            CurrentEntry += ApplyCheatEntry(MMU, CodeEntry, CurrentEntry, true);
+            ApplyCheatEntry(CodeEntry, CurrentEntry);
+            CurrentEntry += EntrySize(CodeEntry, CurrentEntry);
         }
     }
 }
 
-void CCheats::ApplyGSButton(CMipsMemoryVM * MMU)
+void CCheats::ApplyGSButton()
 {
-    uint32_t Address;
     for (size_t CurrentCheat = 0; CurrentCheat < m_Codes.size(); CurrentCheat++)
     {
         const CODES & CodeEntry = m_Codes[CurrentCheat];
@@ -234,21 +272,17 @@ void CCheats::ApplyGSButton(CMipsMemoryVM * MMU)
             const GAMESHARK_CODE & Code = CodeEntry[CurrentEntry];
             switch (Code.Command & 0xFF000000) {
             case 0x88000000:
-                Address = 0x80000000 | (Code.Command & 0xFFFFFF);
-                MMU->SB_VAddr(Address, (uint8_t)Code.Value);
+                ModifyMemory8(0x80000000 | (Code.Command & 0xFFFFFF), (uint8_t)Code.Value);
                 break;
             case 0x89000000:
-                Address = 0x80000000 | (Code.Command & 0xFFFFFF);
-                MMU->SH_VAddr(Address, Code.Value);
+                ModifyMemory16(0x80000000 | (Code.Command & 0xFFFFFF), Code.Value);
                 break;
                 // Xplorer64
             case 0xA8000000:
-                Address = 0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF);
-                MMU->SB_VAddr(Address, (uint8_t)ConvertXP64Value(Code.Value));
+                ModifyMemory8(0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF), (uint8_t)ConvertXP64Value(Code.Value));
                 break;
             case 0xA9000000:
-                Address = 0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF);
-                MMU->SH_VAddr(Address, ConvertXP64Value(Code.Value));
+                ModifyMemory16(0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF), ConvertXP64Value(Code.Value));
                 break;
             }
         }
@@ -282,7 +316,7 @@ bool CCheats::IsValid16BitCode(const char * CheatString)
             break;
         case 0x81000000:
         case 0xA1000000:
-        case 0xD1000000:													// Added by Witten (witten@pj64cheats.net)
+        case 0xD1000000:
         case 0xD3000000:
             if (((CodeEntry.Command & 0xFFFFFF) & 1) == 1)
             {
@@ -291,11 +325,11 @@ bool CCheats::IsValid16BitCode(const char * CheatString)
             break;
         case 0x88000000:
         case 0xA8000000:
-            if (FirstEntry)     { GSButtonCheat = true; }
+            if (FirstEntry) { GSButtonCheat = true; }
             if (!GSButtonCheat) { return false; }
             break;
         case 0x89000000:
-            if (FirstEntry)     { GSButtonCheat = true; }
+            if (FirstEntry) { GSButtonCheat = true; }
             if (!GSButtonCheat) { return false; }
             if (((CodeEntry.Command & 0xFFFFFF) & 1) == 1)
             {
@@ -303,7 +337,7 @@ bool CCheats::IsValid16BitCode(const char * CheatString)
             }
             break;
         case 0xA9000000:
-            if (FirstEntry)     { GSButtonCheat = true; }
+            if (FirstEntry) { GSButtonCheat = true; }
             if (!GSButtonCheat) { return false; }
             if (((ConvertXP64Address(CodeEntry.Command) & 0xFFFFFF) & 1) == 1)
             {
@@ -334,147 +368,238 @@ bool CCheats::IsValid16BitCode(const char * CheatString)
     return true;
 }
 
-int CCheats::ApplyCheatEntry(CMipsMemoryVM * MMU, const CODES & CodeEntry, int CurrentEntry, bool Execute)
+void CCheats::ModifyMemory8(uint32_t Address, uint8_t Value)
+{
+    MEM_VALUE8 OriginalValue;
+    if (!m_MMU.LB_VAddr(Address, OriginalValue.Original))
+    {
+        return;
+    }
+    if (OriginalValue.Original == Value)
+    {
+        return;
+    }
+    OriginalValue.Changed = Value;
+    std::pair<ORIGINAL_VALUES8::iterator, bool> itr = m_OriginalValues8.insert(ORIGINAL_VALUES8::value_type(Address, OriginalValue));
+    m_MMU.SB_VAddr(Address, OriginalValue.Changed);
+    if (g_Recompiler)
+    {
+        g_Recompiler->ClearRecompCode_Virt(Address & ~0xFFF, 0x1000, CRecompiler::Remove_Cheats);
+    }
+}
+
+void CCheats::ModifyMemory16(uint32_t Address, uint16_t Value)
+{
+    MEM_VALUE16 OriginalValue;
+    if (!m_MMU.LH_VAddr(Address, OriginalValue.Original))
+    {
+        return;
+    }
+    if (OriginalValue.Original == Value)
+    {
+        return;
+    }
+    OriginalValue.Changed = Value;
+    std::pair<ORIGINAL_VALUES16::iterator, bool> itr = m_OriginalValues16.insert(ORIGINAL_VALUES16::value_type(Address, OriginalValue));
+    m_MMU.SH_VAddr(Address, OriginalValue.Changed);
+    if (g_Recompiler)
+    {
+        g_Recompiler->ClearRecompCode_Virt(Address & ~0xFFF, 0x1000, CRecompiler::Remove_Cheats);
+    }
+}
+
+void CCheats::ApplyCheatEntry(CODES & CodeEntry, int32_t CurrentEntry)
+{
+    if (CurrentEntry < 0 || CurrentEntry >= (int)CodeEntry.size())
+    {
+        return;
+    }
+    GAMESHARK_CODE & Code = CodeEntry[CurrentEntry];
+    uint16_t wMemory;
+    uint8_t bMemory;
+
+    switch (Code.Command & 0xFF000000)
+    {
+    case 0x50000000: // Gameshark / AR
+        if ((CurrentEntry + 1) >= (int)CodeEntry.size())
+        {
+            return;
+        }
+
+        {
+            const GAMESHARK_CODE & NextCodeEntry = CodeEntry[CurrentEntry + 1];
+            int numrepeats = (Code.Command & 0x0000FF00) >> 8;
+            int offset = Code.Command & 0x000000FF;
+            uint32_t Address;
+            int incr = Code.Value;
+            int i;
+
+            switch (NextCodeEntry.Command & 0xFF000000) {
+            case 0x10000000: // Xplorer64
+            case 0x80000000:
+                Address = 0x80000000 | (NextCodeEntry.Command & 0xFFFFFF);
+                wMemory = NextCodeEntry.Value;
+                for (i = 0; i < numrepeats; i++)
+                {
+                    ModifyMemory8(Address, (uint8_t)wMemory);
+                    Address += offset;
+                    wMemory += (uint16_t)incr;
+                }
+                break;
+            case 0x11000000: // Xplorer64
+            case 0x81000000:
+                Address = 0x80000000 | (NextCodeEntry.Command & 0xFFFFFF);
+                wMemory = NextCodeEntry.Value;
+                for (i = 0; i < numrepeats; i++)
+                {
+                    ModifyMemory16(Address, wMemory);
+                    Address += offset;
+                    wMemory += (uint16_t)incr;
+                }
+                break;
+            }
+        }
+        break;
+    case 0x80000000:
+    case 0x30000000:
+    case 0x82000000:
+    case 0x84000000:
+        ModifyMemory8(0x80000000 | (Code.Command & 0xFFFFFF), (uint8_t)Code.Value);
+        break;
+    case 0x81000000:
+        ModifyMemory16(0x80000000 | (Code.Command & 0xFFFFFF), Code.Value);
+        break;
+    case 0xA0000000:
+        ModifyMemory8(0xA0000000 | (Code.Command & 0xFFFFFF), (uint8_t)Code.Value);
+        break;
+    case 0xA1000000:
+        ModifyMemory16(0xA0000000 | (Code.Command & 0xFFFFFF), Code.Value);
+        break;
+    case 0xD0000000:
+        m_MMU.LB_VAddr(0x80000000 | (Code.Command & 0xFFFFFF), bMemory);
+        if (bMemory == Code.Value)
+        {
+            ApplyCheatEntry(CodeEntry, CurrentEntry + 1);
+        }
+        break;
+    case 0xD1000000:
+        m_MMU.LH_VAddr(0x80000000 | (Code.Command & 0xFFFFFF), wMemory);
+        if (wMemory == Code.Value)
+        {
+            ApplyCheatEntry(CodeEntry, CurrentEntry + 1);
+        }
+        break;
+    case 0xD2000000:
+        m_MMU.LB_VAddr(0x80000000 | (Code.Command & 0xFFFFFF), bMemory);
+        if (bMemory != Code.Value)
+        {
+            ApplyCheatEntry(CodeEntry, CurrentEntry + 1);
+        }
+        break;
+    case 0xD3000000:
+        m_MMU.LH_VAddr(0x80000000 | (Code.Command & 0xFFFFFF), wMemory);
+        if (wMemory != Code.Value)
+        {
+            ApplyCheatEntry(CodeEntry, CurrentEntry + 1);
+        }
+        break;
+    case 0x31000000:
+    case 0x83000000:
+    case 0x85000000:
+        ModifyMemory16(0x80000000 | (Code.Command & 0xFFFFFF), Code.Value);
+        break;
+    case 0xE8000000:
+        ModifyMemory8(0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF), (uint8_t)ConvertXP64Value(Code.Value));
+        break;
+    case 0xE9000000:
+        ModifyMemory16(0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF), ConvertXP64Value(Code.Value));
+        break;
+    case 0xC8000000:
+        ModifyMemory8(0xA0000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF), (uint8_t)Code.Value);
+        break;
+    case 0xC9000000:
+        ModifyMemory16(0xA0000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF), ConvertXP64Value(Code.Value));
+        break;
+    case 0xB8000000:
+    case 0xBA000000:
+        m_MMU.LB_VAddr(0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF), bMemory);
+        if (bMemory == ConvertXP64Value(Code.Value))
+        {
+            ApplyCheatEntry(CodeEntry, CurrentEntry + 1);
+        }
+        break;
+    case 0xB9000000:
+    case 0xBB000000:
+        m_MMU.LH_VAddr(0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF), wMemory);
+        if (wMemory == ConvertXP64Value(Code.Value))
+        {
+            ApplyCheatEntry(CodeEntry, CurrentEntry + 1);
+        }
+        break;
+    }
+}
+
+int32_t CCheats::EntrySize(const CODES & CodeEntry, int32_t CurrentEntry)
 {
     if (CurrentEntry < 0 || CurrentEntry >= (int)CodeEntry.size())
     {
         return 0;
     }
     const GAMESHARK_CODE & Code = CodeEntry[CurrentEntry];
-    uint32_t Address;
-    uint16_t  wMemory;
-    uint8_t  bMemory;
-
     switch (Code.Command & 0xFF000000)
     {
-        // Gameshark / AR
-    case 0x50000000:													// Added by Witten (witten@pj64cheats.net)
-    {
+    case 0x50000000: // Gameshark / AR
         if ((CurrentEntry + 1) >= (int)CodeEntry.size())
         {
             return 1;
         }
 
-        const GAMESHARK_CODE & NextCodeEntry = CodeEntry[CurrentEntry + 1];
-        int numrepeats = (Code.Command & 0x0000FF00) >> 8;
-        int offset = Code.Command & 0x000000FF;
-        int incr = Code.Value;
-        int i;
-
-        switch (NextCodeEntry.Command & 0xFF000000) {
+        switch (CodeEntry[CurrentEntry + 1].Command & 0xFF000000)
+        {
         case 0x10000000: // Xplorer64
         case 0x80000000:
-            Address = 0x80000000 | (NextCodeEntry.Command & 0xFFFFFF);
-            wMemory = NextCodeEntry.Value;
-            for (i = 0; i < numrepeats; i++)
-            {
-                MMU->SB_VAddr(Address, (uint8_t)wMemory);
-                Address += offset;
-                wMemory += (uint16_t)incr;
-            }
-            return 2;
         case 0x11000000: // Xplorer64
         case 0x81000000:
-            Address = 0x80000000 | (NextCodeEntry.Command & 0xFFFFFF);
-            wMemory = NextCodeEntry.Value;
-            for (i = 0; i < numrepeats; i++)
-            {
-                MMU->SH_VAddr(Address, wMemory);
-                Address += offset;
-                wMemory += (uint16_t)incr;
-            }
             return 2;
-        default: return 1;
         }
-    }
-    break;
-    case 0x80000000:
-        Address = 0x80000000 | (Code.Command & 0xFFFFFF);
-        if (Execute) { MMU->SB_VAddr(Address, (uint8_t)Code.Value); }
         break;
-    case 0x81000000:
-        Address = 0x80000000 | (Code.Command & 0xFFFFFF);
-        if (Execute) { MMU->SH_VAddr(Address, Code.Value); }
-        break;
-    case 0xA0000000:
-        Address = 0xA0000000 | (Code.Command & 0xFFFFFF);
-        if (Execute) { MMU->SB_VAddr(Address, (uint8_t)Code.Value); }
-        break;
-    case 0xA1000000:
-        Address = 0xA0000000 | (Code.Command & 0xFFFFFF);
-        if (Execute) { MMU->SH_VAddr(Address, Code.Value); }
-        break;
-    case 0xD0000000:													// Added by Witten (witten@pj64cheats.net)
-        Address = 0x80000000 | (Code.Command & 0xFFFFFF);
-        MMU->LB_VAddr(Address, bMemory);
-        if (bMemory != Code.Value) { Execute = false; }
-        return ApplyCheatEntry(MMU, CodeEntry, CurrentEntry + 1, Execute) + 1;
-    case 0xD1000000:													// Added by Witten (witten@pj64cheats.net)
-        Address = 0x80000000 | (Code.Command & 0xFFFFFF);
-        MMU->LH_VAddr(Address, wMemory);
-        if (wMemory != Code.Value) { Execute = false; }
-        return ApplyCheatEntry(MMU, CodeEntry, CurrentEntry + 1, Execute) + 1;
-    case 0xD2000000:													// Added by Witten (witten@pj64cheats.net)
-        Address = 0x80000000 | (Code.Command & 0xFFFFFF);
-        MMU->LB_VAddr(Address, bMemory);
-        if (bMemory == Code.Value) { Execute = false; }
-        return ApplyCheatEntry(MMU, CodeEntry, CurrentEntry + 1, Execute) + 1;
-    case 0xD3000000:													// Added by Witten (witten@pj64cheats.net)
-        Address = 0x80000000 | (Code.Command & 0xFFFFFF);
-        MMU->LH_VAddr(Address, wMemory);
-        if (wMemory == Code.Value) { Execute = false; }
-        return ApplyCheatEntry(MMU, CodeEntry, CurrentEntry + 1, Execute) + 1;
-
-        // Xplorer64 (Author: Witten)
-    case 0x30000000:
-    case 0x82000000:
-    case 0x84000000:
-        Address = 0x80000000 | (Code.Command & 0xFFFFFF);
-        if (Execute) { MMU->SB_VAddr(Address, (uint8_t)Code.Value); }
-        break;
-    case 0x31000000:
-    case 0x83000000:
-    case 0x85000000:
-        Address = 0x80000000 | (Code.Command & 0xFFFFFF);
-        if (Execute) { MMU->SH_VAddr(Address, Code.Value); }
-        break;
-    case 0xE8000000:
-        Address = 0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF);
-        if (Execute) { MMU->SB_VAddr(Address, (uint8_t)ConvertXP64Value(Code.Value)); }
-        break;
-    case 0xE9000000:
-        Address = 0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF);
-        if (Execute) { MMU->SH_VAddr(Address, ConvertXP64Value(Code.Value)); }
-        break;
-    case 0xC8000000:
-        Address = 0xA0000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF);
-        if (Execute) { MMU->SB_VAddr(Address, (uint8_t)Code.Value); }
-        break;
-    case 0xC9000000:
-        Address = 0xA0000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF);
-        if (Execute) { MMU->SH_VAddr(Address, ConvertXP64Value(Code.Value)); }
-        break;
+    case 0xD0000000:
+    case 0xD1000000:
+    case 0xD2000000:
+    case 0xD3000000:
     case 0xB8000000:
-        Address = 0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF);
-        MMU->LB_VAddr(Address, bMemory);
-        if (bMemory != ConvertXP64Value(Code.Value)) { Execute = false; }
-        return ApplyCheatEntry(MMU, CodeEntry, CurrentEntry + 1, Execute) + 1;
     case 0xB9000000:
-        Address = 0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF);
-        MMU->LH_VAddr(Address, wMemory);
-        if (wMemory != ConvertXP64Value(Code.Value)) { Execute = false; }
-        return ApplyCheatEntry(MMU, CodeEntry, CurrentEntry + 1, Execute) + 1;
     case 0xBA000000:
-        Address = 0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF);
-        MMU->LB_VAddr(Address, bMemory);
-        if (bMemory == ConvertXP64Value(Code.Value)) { Execute = false; }
-        return ApplyCheatEntry(MMU, CodeEntry, CurrentEntry + 1, Execute) + 1;
     case 0xBB000000:
-        Address = 0x80000000 | (ConvertXP64Address(Code.Command) & 0xFFFFFF);
-        MMU->LH_VAddr(Address, wMemory);
-        if (wMemory == ConvertXP64Value(Code.Value)) { Execute = false; }
-        return ApplyCheatEntry(MMU, CodeEntry, CurrentEntry + 1, Execute) + 1;
-    case 0: return MaxGSEntries; break;
+        return EntrySize(CodeEntry, CurrentEntry + 1) + 1;
+    case 0:
+        return MaxGSEntries;
     }
     return 1;
+}
+
+void CCheats::ResetCodes(void)
+{
+    m_Codes.clear();
+    for (ORIGINAL_VALUES8::iterator itr = m_OriginalValues8.begin(); itr != m_OriginalValues8.end(); itr++)
+    {
+        uint8_t CurrentValue;
+        if (m_MMU.LB_VAddr(itr->first, CurrentValue) &&
+            itr->second.Changed == CurrentValue)
+        {
+            m_MMU.SB_VAddr(itr->first, itr->second.Original);
+        }
+    }
+    m_OriginalValues8.clear();
+
+    for (ORIGINAL_VALUES16::iterator itr = m_OriginalValues16.begin(); itr != m_OriginalValues16.end(); itr++)
+    {
+        uint16_t CurrentValue;
+        if (m_MMU.LH_VAddr(itr->first, CurrentValue) &&
+            itr->second.Changed == CurrentValue)
+        {
+            m_MMU.SH_VAddr(itr->first, itr->second.Original);
+        }
+    }
+    m_OriginalValues16.clear();
 }

@@ -4,8 +4,8 @@
 //About DLL
 #1  #  "Português Brasileiro"	// LANGUAGE ID
 #2  #  "Project64 team"			// Author
-#3  #  "2.2"					// Version
-#4  #  "Fevereiro, 2016"			// Date
+#3  #  "2.3"					// Version
+#4  #  "Junho, 2016"			// Date
 
 //About DLL Dialog
 #5  #  "Idioma Atual"
@@ -34,6 +34,7 @@
 #107#  "ROMs Recentes"
 #108#  "Diretórios das ROMs Recentes"
 #109#  "S&air"
+#110#  "Abrir &Combo"
 
 //System Menu
 #120#  "&Sistema"
@@ -51,6 +52,7 @@
 #132#  "R&esumir"
 #133#  "&Resetar Software"
 #134#  "&Resetar Hardware"
+#135#  "Trocar &Disco"
 
 //Options Menu
 #140#  "&Opções"
@@ -112,14 +114,14 @@
 #230#  "Save Slot - 10"
 
 // Menu Descriptions
-#250#  "Abrir uma imagem da ROM de N64"
-#251#  "Exibir Informação sobre a imagem carregada"
-#252#  "Iniciar a Emulação da imagem da ROM carregada"
-#253#  "Parar a Emulação da imagem da ROM carregada"
+#250#  "Abrir uma ROM de N64"
+#251#  "Exibir Informação sobre a ROM carregada"
+#252#  "Iniciar a Emulação da ROM carregada"
+#253#  "Parar a Emulação da ROM carregada"
 #254#  "Selecionar o Diretório das ROMs"
 #255#  "Atualizar a lista de ROMs atuais no Explorador de ROMs"
 #256#  "Sair deste aplicativo"
-#257#  "Reiniciar a imagem da ROM em execução (recarregar quaisquer mudanças nas configurações)"
+#257#  "Reiniciar a ROM em execução (recarregar quaisquer mudanças nas configurações)"
 #258#  "Pausar/Resumir a emulação da ROM atualmente em execução"
 #259#  "Gerar uma imagem Bitmap da Tela atual"
 #260#  "Limitar o FPS para a velocidade correta do n64"
@@ -174,6 +176,7 @@
 #317#  "Jogadores"
 #318#  "Force Feedback"
 #319#  "Formato do Arquivo"
+#321#  "Nome"
 
 //Select ROM
 #320#  "Selecionar o diretório atual das ROMs"
@@ -199,6 +202,8 @@
 #409#  "Atalhos do Teclado"
 #410#  "Status"
 #411#  "Recompilador"
+#412#  "Padrões"
+#413#  "64DD"
 
 //Plugin Dialog
 #420#  "Sobre"
@@ -234,6 +239,11 @@
 #465#  "Exibir a velocidade"
 #466#  "Display de velocidade:"
 #467#  "Verificar se o Project64 já está em execução"
+#468#  "&Diretório de Saves Unificado"
+#469#  "Caminho para Japanese Retail 64DD IPL ROM:"
+#470#  "Caminho para American Retail 64DD IPL ROM:"
+#471#  "Caminho para Development 64DD IPL ROM:"
+#472#  "Modo de Salvamento:"
 
 //ROM Browser Tab
 #480#  "Máx # de ROMs Lembradas (0-10):"
@@ -361,6 +371,10 @@
 #722#  "Aplicar"
 #723#  "Fechar"
 
+//Disk Save Type
+#730#  "Cópia de Disco Completa"
+#731#  "Área de Save Apenas"
+
 /*********************************************************************************
 * ROM Information                                                                *
 *********************************************************************************/
@@ -438,6 +452,22 @@
 #1105#  "Slots de Salvamento"
 
 /*********************************************************************************
+* Support Window                                                                 *
+*********************************************************************************/
+#1200#  "Apoie o Project64"
+#1201#  "Project64 é um pacote de software projetado para emular o video game Nintendo64 em um PC com Microsoft Windows. Este permite que você jogue software de N64 da mesma forma que seria no hardware original.\n\nSe você gostou do Project64 e obteve algum valor através do mesmo, então por favor, apoie o project64 como um agradecimento, ou seu desejo de vê-lo continuamente melhorado.\n\nSe você apoiou o project64:"
+#1202#  "Digite o código de notificação"
+#1203#  "Apoie o Project64"
+#1204#  "Continuar"
+#1205#  "Por favor, insira o código de apoio"
+#1206#  "Código de apoio incorreto"
+#1207#  "Obrigado"
+#1208#  "Digite o código"
+#1209#  "Por favor, digite o código que esta no e-mail"
+#1210#  "OK"
+#1211#  "Cancelar"
+
+/*********************************************************************************
 * Messages                                                                       *
 *********************************************************************************/
 #2000#  "*** CPU PAUSADA ***"
@@ -498,3 +528,50 @@
 #2055#  "Gráficos LLE não são para uso geral!!!\nÉ aconselhável que você só utilize para testes, não para jogar qualquer jogo com ele\n\nMudar para Gráficos LLE?"
 #2056#  "Aúdio HLE"
 #2057#  "O Áudio HLE requer um plugin de terceiros!!!\nSe você não tem um plugin de áudio de terceiros que suporta HLE você não ouvirá o som.\n\nMudar pra áudio HLE?"
+#2058#  "O arquivo carregado não parece ser uma 64DD IPL ROM válida.\n\nVerifique suas ROMs com o GoodN64."
+#2059#  "Nintendo 64DD Japanese Retail IPL ROM não encontrada.\nEla é necessária para jogar discos 64DD de região japonesa.\n\nPor favor selecione a ROM necessária nas Configurações."
+#2061#  "Nintendo 64DD American Retail IPL ROM não encontrada.\nEla é necessária para jogar discos 64DD de região americana.\n\nPor favor selecione a ROM necessária nas Configurações."
+#2062#  "Nintendo 64DD Development IPL ROM não encontrada.\nEla é necessparia para jogar discos 64DD de desenvolvimento.\n\nPor favor selecione a ROM necessária nas Configurações."
+
+
+/*********************************************************************************
+* Android                                                                        *
+*********************************************************************************/
+#3000#  "Configurações"
+#3001#  "Ajuda/Forum"
+#3002#  "Reportar Erro"
+#3003#  "Sobre"
+#3004#  "Jogado Recentemente"
+#3005#  "Jogos"
+#3006#  "Diretório de Jogos"
+#3007#  "Selecione uma pasta para escanear"
+#3008#  "Incluir subdiretórios"
+#3009#  "Pasta Raiz"
+#3010#  "Diretórios"
+#3011#  "Memória Interna"
+#3012#  "Escaneando..."
+#3013#  "OK"
+#3014#  "Cancelar"
+#3015#  "Informação"
+#3016#  "Project64 para Android"
+#3017#  "Licença"
+#3018#  "Revisão"
+#3019#  "Project64 para Android\u2122 é um port da versão para windows do project64.A versão Android\u2122 pode emular a maioria dos jogos do N64."
+#3020#  "Project64 Autores."
+#3021#  "Discord"
+
+//In game menu
+#3100#  "Configurações"
+#3101#  "Salvar State"
+#3102#  "Carregar State"
+#3103#  "Finalizar Emulação"
+#3104#  "Pausar"
+#3105#  "Resumir"
+#3106#  "Velocidade"
+#3107#  "Save State Atual..."
+#3108#  "Auto"
+#3109#  "Slot"
+#3110#  "Resetar"
+#3111#  "Opções de Debug"
+#3112#  "Reset Function Times"
+#3113#  "Dump Function Times"

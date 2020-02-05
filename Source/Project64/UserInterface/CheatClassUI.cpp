@@ -188,7 +188,6 @@ int CALLBACK CCheatsUI::CheatAddProc(HWND hDlg, uint32_t uMsg, uint32_t wParam, 
         CCheatsUI   * _this = (CCheatsUI *)lParam;
         SetProp(hDlg, "Class", _this);
 
-        SetWindowTextW(hDlg, wGS(CHEAT_ADDCHEAT_FRAME).c_str());
         SetWindowTextW(GetDlgItem(hDlg, IDC_NAME), wGS(CHEAT_ADDCHEAT_NAME).c_str());
         SetWindowTextW(GetDlgItem(hDlg, IDC_CODE), wGS(CHEAT_ADDCHEAT_CODE).c_str());
         SetWindowTextW(GetDlgItem(hDlg, IDC_LABEL_OPTIONS), wGS(CHEAT_ADDCHEAT_OPT).c_str());
@@ -301,7 +300,7 @@ int CALLBACK CCheatsUI::CheatAddProc(HWND hDlg, uint32_t uMsg, uint32_t wParam, 
                 }
                 if (_stricmp(CheatName.c_str(), NewCheatName.c_str()) == 0)
                 {
-                    g_Notify->DisplayError(GS(MSG_CHEAT_NAME_IN_USE));
+                    g_Notify->DisplayWarning(GS(MSG_CHEAT_NAME_IN_USE));
                     SetFocus(GetDlgItem(hDlg, IDC_CODE_NAME));
                     return true;
                 }
@@ -452,18 +451,17 @@ int CALLBACK CCheatsUI::CheatListProc(HWND hDlg, uint32_t uMsg, uint32_t wParam,
         RECT rcList;
         RECT rcButton;
 
-        SetWindowTextW(GetDlgItem(hDlg, IDC_CHEATSFRAME), wGS(CHEAT_LIST_FRAME).c_str());
         SetWindowTextW(GetDlgItem(hDlg, IDC_NOTESFRAME), wGS(CHEAT_NOTES_FRAME).c_str());
         SetWindowTextW(GetDlgItem(hDlg, IDC_UNMARK), wGS(CHEAT_MARK_NONE).c_str());
 
-        GetWindowRect(GetDlgItem(hDlg, IDC_CHEATSFRAME), &rcList);
+        GetWindowRect(hDlg, &rcList);
         GetWindowRect(GetDlgItem(hDlg, IDC_UNMARK), &rcButton);
 
         _this->m_hCheatTree = CreateWindowEx(WS_EX_CLIENTEDGE, WC_TREEVIEW, "",
             WS_CHILD | WS_VISIBLE | WS_VSCROLL | TVS_HASLINES |
             TVS_HASBUTTONS | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | WS_TABSTOP |
-            TVS_FULLROWSELECT, 8, 15, rcList.right - rcList.left - 16,
-            rcButton.top - rcList.top - 22, hDlg, (HMENU)IDC_MYTREE, GetModuleHandle(NULL), NULL);
+            TVS_FULLROWSELECT, 6, 4, rcList.right - rcList.left - 13,
+            rcButton.top - rcList.top - 8, hDlg, (HMENU)IDC_MYTREE, GetModuleHandle(NULL), NULL);
         Style = GetWindowLong(_this->m_hCheatTree, GWL_STYLE);
         SetWindowLong(_this->m_hCheatTree, GWL_STYLE, TVS_CHECKBOXES | TVS_SHOWSELALWAYS | Style);
 
@@ -546,7 +544,9 @@ int CALLBACK CCheatsUI::CheatListProc(HWND hDlg, uint32_t uMsg, uint32_t wParam,
 
             GetCursorPos(&Mouse);
 
-            MenuSetText(hPopupMenu, 0, wGS(CHEAT_DELETE).c_str(), NULL);
+            MenuSetText(hPopupMenu, 0, wGS(CHEAT_ADDNEW).c_str(), NULL);
+            MenuSetText(hPopupMenu, 1, wGS(CHEAT_EDIT).c_str(), NULL);
+            MenuSetText(hPopupMenu, 3, wGS(CHEAT_DELETE).c_str(), NULL);
 
             if (_this->m_hSelectedItem != NULL &&
                 TreeView_GetChild(_this->m_hCheatTree, _this->m_hSelectedItem) == NULL)
@@ -829,11 +829,11 @@ int CALLBACK CCheatsUI::CheatsCodeQuantProc(HWND hDlg, uint32_t uMsg, uint32_t w
         SetDlgItemText(hDlg, IDC_CHEAT_NAME, CheatName.c_str());
         SetDlgItemText(hDlg, IDC_VALUE, Value.c_str());
 
-        Start = (uint16_t)(Range.c_str()[0] == '$' ? std::strtoul(&Range.c_str()[1], 0, 16) : atol(Range.c_str()));
+        Start = (uint16_t)(Range.c_str()[0] == '$' ? strtoul(&Range.c_str()[1], 0, 16) : atol(Range.c_str()));
         const char * ReadPos = strrchr(Range.c_str(), '-');
         if (ReadPos != NULL)
         {
-            Stop = (uint16_t)(ReadPos[1] == '$' ? std::strtoul(&ReadPos[2], 0, 16) : atol(&ReadPos[1]));
+            Stop = (uint16_t)(ReadPos[1] == '$' ? strtoul(&ReadPos[2], 0, 16) : atol(&ReadPos[1]));
         }
         else
         {
@@ -854,7 +854,7 @@ int CALLBACK CCheatsUI::CheatsCodeQuantProc(HWND hDlg, uint32_t uMsg, uint32_t w
                 TCHAR szTmp[10], szTmp2[10];
                 uint32_t Value;
                 GetDlgItemText(hDlg, IDC_VALUE, szTmp, sizeof(szTmp));
-                Value = szTmp[0] == '$' ? std::strtoul(&szTmp[1], 0, 16) : std::strtoul(szTmp, 0, 16);
+                Value = szTmp[0] == '$' ? strtoul(&szTmp[1], 0, 16) : strtoul(&szTmp[0], 0, 16);
                 if (Value > Stop)  { Value = Stop; }
                 if (Value < Start) { Value = Start; }
                 sprintf(szTmp2, "$%X", Value);
@@ -887,7 +887,7 @@ int CALLBACK CCheatsUI::CheatsCodeQuantProc(HWND hDlg, uint32_t uMsg, uint32_t w
             uint32_t Value;
 
             GetDlgItemText(hDlg, IDC_VALUE, szTmp, sizeof(szTmp));
-            Value = szTmp[0] == '$' ? std::strtol(&szTmp[1], 0, 16) : std::strtol(szTmp, 0, 16);
+            Value = szTmp[0] == '$' ? strtol(&szTmp[1], 0, 16) : strtol(&szTmp[0], 0, 16);
             if (Value > Stop) { Value = Stop; }
             if (Value < Start) { Value = Start; }
             sprintf(CheatExten, "$%X", Value);
@@ -944,7 +944,7 @@ int CALLBACK CCheatsUI::ManageCheatsProc(HWND hDlg, uint32_t uMsg, uint32_t wPar
         if (g_Settings->LoadDword(UserInterface_BasicMode))
         {
             RECT * rcList = (RECT *)_this->m_rcList;
-            GetWindowRect(GetDlgItem(_this->m_hSelectCheat, IDC_CHEATSFRAME), rcList);
+            GetWindowRect(_this->m_hSelectCheat, rcList);
             _this->m_MinSizeDlg = rcList->right - rcList->left + 16;
             _this->m_MaxSizeDlg = _this->m_MinSizeDlg;
 
@@ -961,8 +961,8 @@ int CALLBACK CCheatsUI::ManageCheatsProc(HWND hDlg, uint32_t uMsg, uint32_t wPar
             ShowWindow(_this->m_AddCheat, SW_HIDE);
 
             RECT * rcAdd = (RECT *)_this->m_rcAdd, *rcList = (RECT *)_this->m_rcList;
-            GetWindowRect(GetDlgItem(_this->m_hSelectCheat, IDC_CHEATSFRAME), rcList);
-            GetWindowRect(GetDlgItem(_this->m_AddCheat, IDC_ADDCHEATSFRAME), rcAdd);
+            GetWindowRect(_this->m_hSelectCheat, rcList);
+            GetWindowRect(_this->m_AddCheat, rcAdd);
             _this->m_MinSizeDlg = rcList->right - rcList->left + 32;
             _this->m_MaxSizeDlg = rcAdd->right - rcList->left + 32;
 

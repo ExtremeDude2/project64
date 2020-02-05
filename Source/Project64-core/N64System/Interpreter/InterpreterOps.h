@@ -110,7 +110,12 @@ public:
     static void  SPECIAL_DADDU();
     static void  SPECIAL_DSUB();
     static void  SPECIAL_DSUBU();
+	static void  SPECIAL_TGE();
+	static void  SPECIAL_TGEU();
+	static void  SPECIAL_TLT();
+	static void  SPECIAL_TLTU();
     static void  SPECIAL_TEQ();
+	static void  SPECIAL_TNE();
     static void  SPECIAL_DSLL();
     static void  SPECIAL_DSRL();
     static void  SPECIAL_DSRA();
@@ -125,6 +130,12 @@ public:
     static void  REGIMM_BGEZL();
     static void  REGIMM_BLTZAL();
     static void  REGIMM_BGEZAL();
+    static void  REGIMM_TEQI();
+    static void  REGIMM_TGEI();
+    static void  REGIMM_TGEIU();
+    static void  REGIMM_TLTI();
+    static void  REGIMM_TLTIU();
+    static void  REGIMM_TNEI();
 
     /************************** COP0 functions **************************/
     static void  COP0_MF();
@@ -160,12 +171,13 @@ public:
     static void  COP1_S_ABS();
     static void  COP1_S_MOV();
     static void  COP1_S_NEG();
+    static void  COP1_S_ROUND_L();
     static void  COP1_S_TRUNC_L();
-    static void  COP1_S_CEIL_L();  //added by Witten
-    static void  COP1_S_FLOOR_L(); //added by Witten
+    static void  COP1_S_CEIL_L();  
+    static void  COP1_S_FLOOR_L(); 
     static void  COP1_S_ROUND_W();
     static void  COP1_S_TRUNC_W();
-    static void  COP1_S_CEIL_W();  //added by Witten
+    static void  COP1_S_CEIL_W();  
     static void  COP1_S_FLOOR_W();
     static void  COP1_S_CVT_D();
     static void  COP1_S_CVT_W();
@@ -181,13 +193,14 @@ public:
     static void  COP1_D_ABS();
     static void  COP1_D_MOV();
     static void  COP1_D_NEG();
-    static void  COP1_D_TRUNC_L(); //added by Witten
-    static void  COP1_D_CEIL_L();  //added by Witten
-    static void  COP1_D_FLOOR_L(); //added by Witten
+    static void  COP1_D_ROUND_L();
+    static void  COP1_D_TRUNC_L(); 
+    static void  COP1_D_CEIL_L();  
+    static void  COP1_D_FLOOR_L(); 
     static void  COP1_D_ROUND_W();
     static void  COP1_D_TRUNC_W();
-    static void  COP1_D_CEIL_W();  //added by Witten
-    static void  COP1_D_FLOOR_W(); //added by Witten
+    static void  COP1_D_CEIL_W();  
+    static void  COP1_D_FLOOR_W(); 
     static void  COP1_D_CVT_S();
     static void  COP1_D_CVT_W();
     static void  COP1_D_CVT_L();
@@ -210,6 +223,8 @@ public:
     static uint32_t    m_NextInstruction;
     static OPCODE      m_Opcode;
     static uint32_t    m_JumpToLocation;
+
+    static bool  MemoryBreakpoint();
 
 protected:
     static void  SPECIAL();

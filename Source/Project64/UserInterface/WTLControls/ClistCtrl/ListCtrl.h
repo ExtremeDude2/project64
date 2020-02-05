@@ -3,7 +3,7 @@
 // CListCtrl - A WTL list control with Windows Vista style item selection.
 //
 // Revision:      1.5
-// Last modified: 9th April 2006
+// Last modified: 2nd November 2016
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -11,10 +11,13 @@
 
 #include <set>
 #include <algorithm>
+#pragma warning(push)
+#pragma warning(disable : 4838) // warning C4838: conversion from 'int' to 'UINT' requires a narrowing conversion
 #include <wtl/atlctrlx.h>
 #include <wtl/atlframe.h>
 #include <wtl/atlmisc.h>
 #include <wtl/atlgdi.h>
+#pragma warning(pop)
 
 #include "DragDrop.h"
 #include "DropArrows.h"
@@ -43,6 +46,7 @@ public:
 	CListImpl()
 	{
 		m_bSortEnabled = TRUE; // Added by Rowan 05/12/2006
+		m_bRightClickSelect = FALSE; // shygoo 2016 Nov 2
 		m_bShowHeader = TRUE;
 		m_bSortAscending = TRUE;
 		m_bButtonDown = FALSE;
@@ -97,10 +101,16 @@ public:
 	
 	~CListImpl()
 	{
+		if (m_wndItemEdit.IsWindow())
+		{
+			// patch memory window crash
+			m_wndItemEdit.UnsubclassWindow();
+		}
 	}
 
 protected:
 	BOOL m_bSortEnabled; // Added by Rowan 05/12/2006 to disable sorting
+	BOOL m_bRightClickSelect; // shygoo 2016 Nov 2
 	BOOL m_bShowHeader;
 	BOOL m_bShowSort;
 	BOOL m_bSortAscending;
@@ -330,6 +340,12 @@ public:
 		m_bSortEnabled = bSortEnabled;
 	}
 	
+	// shygoo 2016 Nov 2
+	void SetRightClickSelect( BOOL bRightClickSelect = TRUE)
+	{
+		m_bRightClickSelect = bRightClickSelect;
+	}
+
 	void ShowHeader( BOOL bShowHeader = TRUE )
 	{
 		m_bShowHeader = bShowHeader;		
@@ -886,7 +902,6 @@ public:
 			if ( !GetColumnRect( nSubItem, rcColumn ) )
 				return FALSE;
 			
-			CRect rcClient;
 			GetClientRect( rcClient );
 
 			int nScrollPos = 0;
@@ -2245,7 +2260,7 @@ public:
 
 				if (( pT->GetItemFlags( nItem, nIndex ) & ITEM_FLAGS_HIT_NOTIFY ) != 0)
 				{
-					NotifyParent( nItem, nSubItem, LCN_HITTEST );						
+					NotifyParent( nItem, nSubItem, LCN_HITTEST );	
 				}
 			}
 		}
@@ -2336,9 +2351,12 @@ public:
 		int nItem = NULL_ITEM;
 		int nSubItem = NULL_SUBITEM;
 		
-		// only select item if not already selected (de-select in OnLButtonUp)
-		if ( HitTest( point, nItem, nSubItem ) && !IsSelected( nItem ) )
-			SelectItem( nItem, nSubItem, nFlags );
+		if (m_bRightClickSelect)
+		{
+			// only select item if not already selected (de-select in OnLButtonUp)
+			if (HitTest(point, nItem, nSubItem) && !IsSelected(nItem))
+				SelectItem(nItem, nSubItem, nFlags);
+		}
 	}
 
 	void OnRButtonUp( UINT /*nFlags*/, CPoint point )
@@ -2352,7 +2370,7 @@ public:
 		// notify parent of right-click item
 		NotifyParent( nItem, nSubItem, LCN_RIGHTCLICK );
 	}
-	
+
 	void OnMouseMove( UINT nFlags, CPoint point )
 	{
 		T* pT = static_cast<T*>(this);
@@ -2485,6 +2503,8 @@ public:
 					
 					m_nHotItem = nItem;
 					m_nHotSubItem = nSubItem;
+
+					NotifyParent(nItem, nSubItem, LCN_HOTITEMCHANGED);
 				}
 				
 				int nIndex = GetColumnIndex( m_nHotSubItem );
@@ -2559,7 +2579,7 @@ public:
 		return TRUE;
 	}
 	
-	void OnTimer( UINT nIDEvent )
+	void OnTimer(UINT_PTR nIDEvent )
 	{
 		switch ( nIDEvent )
 		{
@@ -3138,16 +3158,16 @@ public:
 		TRIVERTEX triVertext[ 2 ] = {
 										rcRect.left,
 										rcRect.top,
-										GetRValue( rgbTop ) << 8,
-										GetGValue( rgbTop ) << 8,
-										GetBValue( rgbTop ) << 8,
-										0x0000,			
+										(COLOR16)(GetRValue( rgbTop ) << 8),
+                                        (COLOR16)(GetGValue( rgbTop ) << 8),
+                                        (COLOR16)(GetBValue( rgbTop ) << 8),
+                                        (COLOR16)(0x0000),
 										rcRect.right,
 										rcRect.bottom,
-										GetRValue( rgbBottom ) << 8,
-										GetGValue( rgbBottom ) << 8,
-										GetBValue( rgbBottom ) << 8,
-										0x0000
+                                        (COLOR16)(GetRValue( rgbBottom ) << 8),
+                                        (COLOR16)(GetGValue( rgbBottom ) << 8),
+                                        (COLOR16)(GetBValue( rgbBottom ) << 8),
+                                        (COLOR16)(0x0000)
 									};
 		
 		dcPaint.GradientFill( triVertext, 2, &grdRect, 1, GRADIENT_FILL_RECT_V );

@@ -46,10 +46,10 @@
     <Filter Include="Header Files\Multilanguage Headers">
       <UniqueIdentifier>{5531af4d-33bb-4e84-8a55-c971a18ec7bf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\N64 System Headers">
-      <UniqueIdentifier>{6cfab019-2f8d-4e09-be41-1df513b5a680}</UniqueIdentifier>
+    <Filter Include="Header Files\Settings">
+      <UniqueIdentifier>{8eaf5c00-c88d-418e-a27c-d658c547ab79}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\N64 System Headers\Debugger Headers">
+    <Filter Include="Header Files\User Interface Headers\Debugger Headers">
       <UniqueIdentifier>{c4249d55-df70-4453-b017-b548514ad094}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -105,13 +105,13 @@
     <ClCompile Include="UserInterface\CheatClassUI.cpp">
       <Filter>Source Files\User Interface Source</Filter>
     </ClCompile>
-    <ClCompile Include="UserInterface\GuiClass.cpp">
+    <ClCompile Include="UserInterface\MainWindow.cpp">
       <Filter>Source Files\User Interface Source</Filter>
     </ClCompile>
     <ClCompile Include="UserInterface\LoggingUI.cpp">
       <Filter>Source Files\User Interface Source</Filter>
     </ClCompile>
-    <ClCompile Include="UserInterface\MainMenuClass.cpp">
+    <ClCompile Include="UserInterface\MainMenu.cpp">
       <Filter>Source Files\User Interface Source</Filter>
     </ClCompile>
     <ClCompile Include="UserInterface\MenuClass.cpp">
@@ -120,29 +120,11 @@
     <ClCompile Include="UserInterface\MenuShortCuts.cpp">
       <Filter>Source Files\User Interface Source</Filter>
     </ClCompile>
-    <ClCompile Include="UserInterface\NotificationClass.cpp">
-      <Filter>Source Files\User Interface Source</Filter>
-    </ClCompile>
     <ClCompile Include="UserInterface\RomBrowserClass.cpp">
       <Filter>Source Files\User Interface Source</Filter>
     </ClCompile>
     <ClCompile Include="UserInterface\SettingsConfig.cpp">
       <Filter>Source Files\User Interface Source</Filter>
-    </ClCompile>
-    <ClCompile Include="N64System\Debugger\Debugger.cpp">
-      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
-    </ClCompile>
-    <ClCompile Include="N64System\Debugger\Debugger-MemoryDump.cpp">
-      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
-    </ClCompile>
-    <ClCompile Include="N64System\Debugger\Debugger-MemorySearch.cpp">
-      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
-    </ClCompile>
-    <ClCompile Include="N64System\Debugger\Debugger-TLB.cpp">
-      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
-    </ClCompile>
-    <ClCompile Include="N64System\Debugger\Debugger-ViewMemory.cpp">
-      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
     </ClCompile>
     <ClCompile Include="Settings\GuiSettings.cpp">
       <Filter>Source Files\Settings Files</Filter>
@@ -156,6 +138,111 @@
     <ClCompile Include="UserInterface\RomInformationClass.cpp">
       <Filter>Source Files\User Interface Source</Filter>
     </ClCompile>
+    <ClCompile Include="Settings\UISettings.cpp">
+      <Filter>Source Files\Settings Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\SupportEnterCode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\SupportWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Assembler.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Breakpoints.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Debugger.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Debugger-AddBreakpoint.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Debugger-AddSymbol.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Debugger-Commands.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Debugger-DMALogView.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Debugger-MemoryDump.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Debugger-MemorySearch.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Debugger-RegisterTabs.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Debugger-Scripts.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Debugger-StackTrace.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Debugger-StackView.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Debugger-Symbols.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Debugger-TLB.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Debugger-ViewMemory.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\DMALog.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\ScriptHook.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\ScriptInstance.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\ScriptSystem.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Symbols.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\WTLControls\EditNumber32.cpp">
+      <Filter>Source Files\User Interface Source\WTL Controls Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Notification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\MemoryScanner.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Settings\SettingsPage-Defaults.cpp">
+      <Filter>Source Files\User Interface Source\Settings Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\EnhancementConfig.cpp">
+      <Filter>Source Files\User Interface Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\CPULog.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Debugger-CPULogView.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\Debugger-ExceptionBreakpoints.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Settings\SettingsPage-DiskDrive.cpp">
+      <Filter>Source Files\User Interface Source\Settings Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\WTLControls\HexEditCtrl.cpp">
+      <Filter>Source Files\User Interface Source\WTL Controls Source</Filter>
+    </ClCompile>
+    <ClCompile Include="UserInterface\Debugger\DebugMMU.cpp">
+      <Filter>Source Files\User Interface Source\Debugger Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UserInterface\resource.h">
@@ -164,46 +251,22 @@
     <ClInclude Include="Multilanguage\LanguageSelector.h">
       <Filter>Header Files\Multilanguage Headers</Filter>
     </ClInclude>
-    <ClInclude Include="N64System\Debugger\DebugDialog.h">
-      <Filter>Header Files\N64 System Headers\Debugger Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="N64System\Debugger\debugger.h">
-      <Filter>Header Files\N64 System Headers\Debugger Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="N64System\Debugger\Debugger-MemoryDump.h">
-      <Filter>Header Files\N64 System Headers\Debugger Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="N64System\Debugger\Debugger-MemorySearch.h">
-      <Filter>Header Files\N64 System Headers\Debugger Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="N64System\Debugger\Debugger-TLB.h">
-      <Filter>Header Files\N64 System Headers\Debugger Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="N64System\Debugger\DebuggerUI.h">
-      <Filter>Header Files\N64 System Headers\Debugger Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="N64System\Debugger\Debugger-ViewMemory.h">
-      <Filter>Header Files\N64 System Headers\Debugger Headers</Filter>
-    </ClInclude>
     <ClInclude Include="UserInterface\CheatClassUI.h">
       <Filter>Header Files\User Interface Headers</Filter>
     </ClInclude>
-    <ClInclude Include="UserInterface\GuiClass.h">
+    <ClInclude Include="UserInterface\MainWindow.h">
       <Filter>Header Files\User Interface Headers</Filter>
     </ClInclude>
     <ClInclude Include="UserInterface\LoggingUI.h">
       <Filter>Header Files\User Interface Headers</Filter>
     </ClInclude>
-    <ClInclude Include="UserInterface\MainMenuClass.h">
+    <ClInclude Include="UserInterface\MainMenu.h">
       <Filter>Header Files\User Interface Headers</Filter>
     </ClInclude>
     <ClInclude Include="UserInterface\MenuClass.h">
       <Filter>Header Files\User Interface Headers</Filter>
     </ClInclude>
     <ClInclude Include="UserInterface\MenuShortCuts.h">
-      <Filter>Header Files\User Interface Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="UserInterface\NotificationClass.h">
       <Filter>Header Files\User Interface Headers</Filter>
     </ClInclude>
     <ClInclude Include="UserInterface\RomBrowser.h">
@@ -219,9 +282,6 @@
       <Filter>Header Files\User Interface Headers\WTL Controls Headers</Filter>
     </ClInclude>
     <ClInclude Include="UserInterface\WTLControls\ModifiedEditBox.h">
-      <Filter>Header Files\User Interface Headers\WTL Controls Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="UserInterface\WTLControls\numberctrl.h">
       <Filter>Header Files\User Interface Headers\WTL Controls Headers</Filter>
     </ClInclude>
     <ClInclude Include="UserInterface\WTLControls\PartialGroupBox.h">
@@ -278,6 +338,135 @@
     <ClInclude Include="UserInterface\RomInformationClass.h">
       <Filter>Header Files\User Interface Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Settings\GuiSettings.h">
+      <Filter>Header Files\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings\NotificationSettings.h">
+      <Filter>Header Files\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings\UISettings.h">
+      <Filter>Header Files\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\SupportEnterCode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\SupportWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="N64System\Debugger\OpInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\WTLControls\TooltipDialog.h">
+      <Filter>Header Files\User Interface Headers\WTL Controls Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Assembler.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Breakpoints.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\DebugDialog.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\debugger.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Debugger-AddBreakpoint.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Debugger-AddSymbol.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Debugger-Commands.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Debugger-DMALogView.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Debugger-MemoryDump.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Debugger-MemorySearch.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Debugger-RegisterTabs.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Debugger-Scripts.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Debugger-StackTrace.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Debugger-StackView.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Debugger-Symbols.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Debugger-TLB.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\DebuggerUI.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Debugger-ViewMemory.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\DMALog.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\OpInfo.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\ScriptHook.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\ScriptInstance.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\ScriptSystem.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\stdafx.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Symbols.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\WTLControls\EditNumber32.h">
+      <Filter>Header Files\User Interface Headers\WTL Controls Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Notification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\MemoryScanner.h">
+      <Filter>Header Files\User Interface Headers\Settings Header</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Settings\SettingsPage-Defaults.h">
+      <Filter>Header Files\User Interface Headers\Settings Header</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\EnhancementConfig.h">
+      <Filter>Header Files\User Interface Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\CPULog.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Debugger-CPULogView.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\Debugger-ExceptionBreakpoints.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Settings\SettingsPage-DiskDrive.h">
+      <Filter>Header Files\User Interface Headers\Settings Header</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\WTLControls\HexEditCtrl.h">
+      <Filter>Header Files\User Interface Headers\WTL Controls Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface\Debugger\DebugMMU.h">
+      <Filter>Header Files\User Interface Headers\Debugger Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\divider.cur">
@@ -286,9 +475,43 @@
     <None Include="res\hand.cur">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="UserInterface\Icons\divider.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="UserInterface\Icons\hand.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="UserInterface\icons\bin00001.bin">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="UserInterface\icons\javascri.bin">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="UserInterface\API.js" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\ListItems.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="UserInterface\Icons\PJ64.ICO">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="UserInterface\Icons\right.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="UserInterface\Icons\left.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="UserInterface\Bitmaps\tri-state.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="UserInterface\Bitmaps\ListItems.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="UserInterface\Bitmaps\AboutScreenLogo.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="UserInterface\Bitmaps\AboutScreenLogoHDPI.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
@@ -296,5 +519,8 @@
     <ResourceCompile Include="UserInterface\UIResources.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="Project64.exe.manifest" />
   </ItemGroup>
 </Project>

@@ -499,7 +499,10 @@ EXPORT void CALL RomClosed(void)
 	EnterCriticalSection( &g_critical );
 
 	if (g_sysMouse.didHandle)
+	{
+		g_sysMouse.didHandle->Unacquire();
 		g_sysMouse.didHandle->SetCooperativeLevel(g_strEmuInfo.hMainWindow, DIB_KEYBOARD); // unlock the mouse, just in case
+	}
 
 	for( i = 0; i < ARRAYSIZE(g_pcControllers); ++i )
 	{
@@ -536,7 +539,7 @@ EXPORT void CALL GetKeys(int Control, BUTTONS * Keys )
 #ifdef ENABLE_RAWPAK_DEBUG
 	DebugWriteA("CALLED: GetKeys\n");
 #endif
-	if( g_bConfiguring )
+	if( g_bConfiguring || (!g_pcControllers[Control].bBackgroundInput && GetForegroundWindow() != g_strEmuInfo.hMainWindow) )
 		Keys->Value = 0;
 	else
 	{
@@ -681,7 +684,8 @@ EXPORT void CALL ReadController( int Control, BYTE * Command )
 		// expected: controller gets 1 byte (command), controller sends back 4 bytes
 		// should be:	Command[0] == 0x01
 		//				Command[1] == 0x04
-		if( g_bConfiguring )
+
+		if( g_bConfiguring || (!g_pcControllers[Control].bBackgroundInput && GetForegroundWindow() != g_strEmuInfo.hMainWindow) )
 			Command[3] = Command[4] = Command[5] = Command[6] = 0;
 		else
 		{

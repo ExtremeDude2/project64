@@ -85,6 +85,9 @@ void Create_RSP_Register_Window ( int Child ) {
 			CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)Create_RSP_Register_Window,
 				(LPVOID)TRUE,0, &ThreadID);
 		} else {
+            if (IsIconic((HWND)RSP_Registers_hDlg)) {
+                SendMessage(RSP_Registers_hDlg, WM_SYSCOMMAND, SC_RESTORE, NULL);
+            }
 			SetForegroundWindow(RSP_Registers_hDlg);
 		}	
 	}
@@ -368,13 +371,11 @@ LRESULT CALLBACK RefreshRSP_RegProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				PaintRSP_Vector2_Panel (hWnd);
 				break;
 			}
-
 		}
 		break;
-	default:
-		return( (*RefreshProc)(hWnd, uMsg, wParam, lParam) );
 	}
-	return( FALSE );
+
+	return CallWindowProc(RefreshProc, hWnd, uMsg, wParam, lParam);
 }
 
 LRESULT CALLBACK RSP_Registers_Proc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {	

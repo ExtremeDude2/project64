@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <Common/Thread.h>
 #ifdef _WIN32
 #include <Windows.h>
 #else
@@ -26,7 +27,8 @@ public:
 
     CTraceModule * AddTraceModule(CTraceModule * TraceModule);
     CTraceModule * RemoveTraceModule(CTraceModule * TraceModule);
-    void           CloseTrace(void);
+    void CloseTrace(void);
+    void FlushTrace(void);
 };
 
 CTraceLog & GetTraceObjet(void)
@@ -53,6 +55,11 @@ void WriteTraceFull(uint32_t module, uint8_t severity, const char * file, int li
         GetTraceObjet().TraceMessage(module, severity, file, line, function, Message);
     }
     va_end(args);
+}
+
+void TraceFlushLog(void)
+{
+    GetTraceObjet().FlushTrace();
 }
 
 void CloseTrace(void)
@@ -115,13 +122,29 @@ void CTraceLog::CloseTrace(void)
 {
     CGuard Guard(m_CS);
     m_Modules.clear();
+
+    if (g_ModuleLogLevel)
+    {
+        delete g_ModuleLogLevel;
+        g_ModuleLogLevel = NULL;
+    }
+}
+
+void CTraceLog::FlushTrace(void)
+{
+    CGuard Guard(m_CS);
+    for (size_t i = 0, n = m_Modules.size(); i < n; i++)
+    {
+        m_Modules[i]->FlushTrace();
+    }
+
 }
 
 void CTraceLog::TraceMessage(uint32_t module, uint8_t severity, const char * file, int line, const char * function, const char * Message)
 {
     CGuard Guard(m_CS);
 
-    for (uint32_t i = 0, n = m_Modules.size(); i < n; i++)
+    for (size_t i = 0, n = m_Modules.size(); i < n; i++)
     {
         m_Modules[i]->Write(module, severity, file, line, function, Message);
     }
@@ -171,8 +194,8 @@ const char * TraceModule(uint32_t module)
     return Unknown.c_str();
 }
 
-CTraceFileLog::CTraceFileLog(const char * FileName, bool FlushFile, LOG_OPEN_MODE eMode, size_t dwMaxFileSize) :
-m_FlushFile(FlushFile)
+CTraceFileLog::CTraceFileLog(const char * FileName, bool FlushFile, CLog::LOG_OPEN_MODE eMode, size_t dwMaxFileSize) :
+    m_FlushFile(FlushFile)
 {
     enum { MB = 1024 * 1024 };
 
@@ -183,7 +206,7 @@ m_FlushFile(FlushFile)
     { /* Clamp file size to 5 MB if it exceeds 2047 or falls short of 3. */
         dwMaxFileSize = 5;
     }
-    m_hLogFile.SetMaxFileSize(dwMaxFileSize * MB);
+    m_hLogFile.SetMaxFileSize((uint32_t)(dwMaxFileSize * MB));
 
     m_hLogFile.Open(FileName, eMode);
 }
@@ -199,7 +222,7 @@ void CTraceFileLog::Write(uint32_t module, uint8_t severity, const char * /*file
 #ifdef _WIN32
     SYSTEMTIME sysTime;
     ::GetLocalTime(&sysTime);
-    stdstr_f timestamp("%04d/%02d/%02d %02d:%02d:%02d.%03d %05d,", sysTime.wYear, sysTime.wMonth, sysTime.wDay, sysTime.wHour, sysTime.wMinute, sysTime.wSecond, sysTime.wMilliseconds, GetCurrentThreadId());
+    stdstr_f timestamp("%04d/%02d/%02d %02d:%02d:%02d.%03d %05d,", sysTime.wYear, sysTime.wMonth, sysTime.wDay, sysTime.wHour, sysTime.wMinute, sysTime.wSecond, sysTime.wMilliseconds, CThread::GetCurrentThreadId());
 #else
     time_t ltime;
     ltime=time(&ltime);
@@ -211,7 +234,7 @@ void CTraceFileLog::Write(uint32_t module, uint8_t severity, const char * /*file
     gettimeofday(&curTime, NULL);
     int milliseconds = curTime.tv_usec / 1000;
 
-    stdstr_f timestamp("%04d/%02d/%02d %02d:%02d:%02d.%03d %05d,", result.tm_year+1900, result.tm_mon+1, result.tm_mday, result.tm_hour, result.tm_min, result.tm_sec, milliseconds, GetCurrentThreadId());
+    stdstr_f timestamp("%04d/%02d/%02d %02d:%02d:%02d.%03d %05d,", result.tm_year+1900, result.tm_mon+1, result.tm_mday, result.tm_hour, result.tm_min, result.tm_sec, milliseconds, CThread::GetCurrentThreadId());
 #endif
 
     m_hLogFile.Log(timestamp.c_str());
@@ -229,7 +252,13 @@ void CTraceFileLog::Write(uint32_t module, uint8_t severity, const char * /*file
     }
 }
 
+void CTraceFileLog::FlushTrace(void)
+{
+    m_hLogFile.Flush();
+}
+
 void CTraceFileLog::SetFlushFile(bool bFlushFile)
 {
     m_FlushFile = bFlushFile;
+    FlushTrace();
 }

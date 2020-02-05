@@ -64,6 +64,7 @@ enum LanguageStringID
     MENU_RECENT_ROM = 107,
     MENU_RECENT_DIR = 108,
     MENU_EXIT = 109,
+    MENU_OPEN_COMBO = 110,
 
     //System Menu
     MENU_SYSTEM = 120,
@@ -79,8 +80,9 @@ enum LanguageStringID
     MENU_CHEAT = 130,
     MENU_GS_BUTTON = 131,
     MENU_RESUME = 132,
-    MENU_RESET_SOFT = 133, //added in build 1.7.50
-    MENU_RESET_HARD = 134, //added in build 1.7.50
+    MENU_RESET_SOFT = 133,
+    MENU_RESET_HARD = 134,
+    MENU_SWAPDISK = 135,
 
     //Options Menu
     MENU_OPTIONS = 140,
@@ -127,6 +129,7 @@ enum LanguageStringID
     POPUP_CHEATS = 213,
     POPUP_GFX_PLUGIN = 214,
     POPUP_PLAYDISK = 215,
+	POPUP_ENHANCEMENTS = 216,
 
     //selecting save slot
     SAVE_SLOT_DEFAULT = 220,
@@ -204,6 +207,8 @@ enum LanguageStringID
     RB_PLAYERS = 317,
     RB_FORCE_FEEDBACK = 318,
     RB_FILE_FORMAT = 319,
+    RB_NAME = 321,
+
 
     //Select Rom
     SELECT_ROM_DIR = 320,
@@ -228,7 +233,9 @@ enum LanguageStringID
     TAB_ROMNOTES = 408,
     TAB_SHORTCUTS = 409,
     TAB_ROMSTATUS = 410,
-    TAB_RECOMPILER = 411, //Added in 1.7.0.50
+    TAB_RECOMPILER = 411,
+    TAB_DEFAULTS = 412,
+    TAB_DISKDRIVE = 413,
 
     //Plugin Dialog
     PLUG_ABOUT = 420,
@@ -264,6 +271,12 @@ enum LanguageStringID
     OPTION_DISPLAY_FR = 465,
     OPTION_CHANGE_FR = 466,
     OPTION_CHECK_RUNNING = 467,
+    OPTION_UNIQUE_SAVE_DIR = 468,
+
+    OPTION_IPL_ROM_PATH = 469,
+    OPTION_IPL_ROM_USA_PATH = 470,
+    OPTION_IPL_ROM_TOOL_PATH = 471,
+    OPTION_DISKSAVETYPE = 472,
 
     //Rom Browser Tab
     RB_MAX_ROMS = 480,
@@ -279,6 +292,7 @@ enum LanguageStringID
     RB_UP = 490,
     RB_DOWN = 491,
     RB_REFRESH = 492,
+    RB_FILEEXT = 493,
 
     //Advanced Options
     ADVANCE_INFO = 500,
@@ -318,6 +332,9 @@ enum LanguageStringID
     ROM_COUNTPERBYTE = 537,
     ROM_32BIT = 538,
     ROM_DELAY_DP = 539,
+    ROM_OVER_CLOCK_MODIFIER = 5400,
+    ROM_UNALIGNED_DMA = 5410,
+    ROM_RANDOMIZE_SIPI_INTERRUPTS = 5420,
 
     //Core Styles
     CORE_INTERPTER = 540,
@@ -380,6 +397,8 @@ enum LanguageStringID
     STR_FR_VIS = 700,
     STR_FR_DLS = 701,
     STR_FR_PERCENT = 702,
+    STR_FR_DLS_VIS = 703,
+	STR_FR_NONE = 704,
 
     // Increase speed
     STR_INSREASE_SPEED = 710,
@@ -390,6 +409,10 @@ enum LanguageStringID
     BOTTOM_RESET_ALL = 721,
     BOTTOM_APPLY = 722,
     BOTTOM_CLOSE = 723,
+    
+    //Disk Save Type
+    DISKSAVE_SHADOW = 730,
+    DISKSAVE_RAM = 731,
 
     /*********************************************************************************
     * ROM Information                                                                *
@@ -468,6 +491,22 @@ enum LanguageStringID
     STR_SHORTCUT_SAVESLOT = 1105,
 
     /*********************************************************************************
+    * Support Window                                                                       *
+    *********************************************************************************/
+    MSG_SUPPORT_TITLE = 1200,
+    MSG_SUPPORT_INFO = 1201,
+    MSG_SUPPORT_ENTER_CODE = 1202,
+    MSG_SUPPORT_PROJECT64 = 1203,
+    MSG_SUPPORT_CONTINUE = 1204,
+    MSG_SUPPORT_ENTER_SUPPORT_CODE = 1205,
+    MSG_SUPPORT_INCORRECT_CODE = 1206,
+    MSG_SUPPORT_COMPLETE = 1207,
+    MSG_SUPPORT_ENTER_CODE_TITLE = 1208,
+    MSG_SUPPORT_ENTER_CODE_DESC = 1209,
+    MSG_SUPPORT_OK = 1210,
+    MSG_SUPPORT_CANCEL = 1211,
+
+    /*********************************************************************************
     * Messages                                                                       *
     *********************************************************************************/
     MSG_CPU_PAUSED = 2000,
@@ -495,7 +534,7 @@ enum LanguageStringID
     MSG_UNHANDLED_OP = 2022,
     MSG_NONMAPPED_SPACE = 2023,
     MSG_SAVE_STATE_HEADER = 2024,
-    MSG_MSGBOX_TITLE = 2025,
+    MSG_MSGBOX_ERROR_TITLE = 2025,
     MSG_PIF2_ERROR = 2026,
     MSG_PIF2_TITLE = 2027,
     MSG_PLUGIN_CHANGE = 2028,
@@ -515,19 +554,71 @@ enum LanguageStringID
     MSG_DEL_TITLE = 2042,
     MSG_CHEAT_NAME_IN_USE = 2043,
     MSG_MAX_CHEATS = 2044,
-    MSG_PLUGIN_INIT = 2045,		//Added in pj64 1.6
-    MSG_NO_SHORTCUT_SEL = 2046,		//Added in pj64 1.6
-    MSG_NO_MENUITEM_SEL = 2047,		//Added in pj64 1.6
-    MSG_MENUITEM_ASSIGNED = 2048,		//Added in pj64 1.6
-    MSG_NO_SEL_SHORTCUT = 2049,		//Added in pj64 1.6
-    MSG_WAITING_FOR_START = 2050,		//Added in pj64 1.7
-    MSG_INVALID_EXE = 2051,		//Added in pj64 1.7
-    MSG_INVALID_EXE_TITLE = 2052,		//Added in pj64 1.7
-    MSG_7Z_FILE_NOT_FOUND = 2053,		//Added in pj64 1.7
-    MSG_SET_LLE_GFX_TITLE = 2054,		//Added in pj64 1.7
-    MSG_SET_LLE_GFX_MSG = 2055,		//Added in pj64 1.7
-    MSG_SET_HLE_AUD_TITLE = 2056,		//Added in pj64 1.7
-    MSG_SET_HLE_AUD_MSG = 2057,		//Added in pj64 1.7
+    MSG_PLUGIN_INIT = 2045,
+    MSG_NO_SHORTCUT_SEL = 2046,
+    MSG_NO_MENUITEM_SEL = 2047,
+    MSG_MENUITEM_ASSIGNED = 2048,
+    MSG_NO_SEL_SHORTCUT = 2049,
+    MSG_WAITING_FOR_START = 2050,
+    MSG_INVALID_EXE = 2051,
+    MSG_INVALID_EXE_TITLE = 2052,
+    MSG_7Z_FILE_NOT_FOUND = 2053,
+    MSG_SET_LLE_GFX_TITLE = 2054,
+    MSG_SET_LLE_GFX_MSG = 2055,
+    MSG_SET_HLE_AUD_TITLE = 2056,
+    MSG_SET_HLE_AUD_MSG = 2057,
+    MSG_FAIL_IMAGE_IPL = 2058,
+    MSG_IPL_REQUIRED = 2059,
+    MSG_MSGBOX_WARNING_TITLE = 2060,
+    MSG_USA_IPL_REQUIRED = 2061,
+    MSG_TOOL_IPL_REQUIRED = 2062,
+
+    /*********************************************************************************
+    * Android                                                                        *
+    *********************************************************************************/
+    ANDROID_SETTINGS = 3000,
+    ANDROID_FORUM = 3001,
+    ANDROID_REPORT_BUG = 3002,
+    ANDROID_ABOUT = 3003,
+    ANDROID_GALLERY_RECENTLYPLAYED = 3004,
+    ANDROID_GALLERY_LIBRARY = 3005,
+    ANDROID_GAMEDIR = 3006,
+    ANDROID_SELECTDIR = 3007,
+    ANDROID_INCLUDE_SUBDIRECTORIES = 3008,
+    ANDROID_PARENTFOLDER = 3009,
+    ANDROID_DIRECTORIES = 3010,
+    ANDROID_INTERNAL_MEMORY = 3011,
+    ANDROID_TITLE = 3012,
+    ANDROID_OK = 3013,
+    ANDROID_CANCEL = 3014,
+    ANDROID_ABOUT_INFO = 3015,
+    ANDROID_ABOUT_APP_NAME = 3016,
+    ANDROID_ABOUT_LICENCE = 3017,
+    ANDROID_ABOUT_REVISION = 3018,
+    ANDROID_ABOUT_TEXT = 3019,
+	ANDROID_ABOUT_PJ64_AUTHORS = 3020,
+	ANDROID_DISCORD = 3021,
+	ANDROID_SUPPORT_PJ64 = 3022,
+	ANDROID_REVIEW_PJ64 = 3023,
+
+    //In game menu
+    ANDROID_MENU_SETTINGS = 3100,
+    ANDROID_MENU_SAVESTATE = 3101,
+    ANDROID_MENU_LOADSTATE = 3102,
+    ANDROID_MENU_ENDEMULATION = 3103,
+    ANDROID_MENU_PAUSE = 3104,
+    ANDROID_MENU_RESUME = 3105,
+    ANDROID_MENU_GAMESPEED = 3106,
+    ANDROID_MENU_CURRENTSAVESTATE = 3107,
+    ANDROID_MENU_CURRENTSAVEAUTO = 3108,
+    ANDROID_MENU_CURRENTSAVESLOT = 3109,
+    ANDROID_MENU_CONSOLERESET = 3110,
+    ANDROID_MENU_DEBUGGINGOPTIONS = 3111,
+    ANDROID_MENU_RESETFUNCTIONTIMES = 3112,
+    ANDROID_MENU_DUMPFUNCTIONTIMES = 3113,
+
+    //Video plugin
+    ANDROID_VIDEO_NATIVE_RES = 3200,
 };
 
 #include "Multilanguage/LanguageClass.h"

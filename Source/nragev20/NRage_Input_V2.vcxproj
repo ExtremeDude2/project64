@@ -50,6 +50,9 @@
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(Root)Source\3rdParty\directx\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
+    <PreBuildEvent>
+      <Command>"$(SolutionDir)Source\Script\UpdateVersion.cmd" "$(Configuration)" "$(Platform)" "$(SolutionDir)Source\nragev20\Version.h.in" "$(SolutionDir)Source\nragev20\Version.h"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Debug.cpp">
@@ -86,5 +89,10 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="NRagePluginV2.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UpdateVersion\UpdateVersion.vcxproj">
+      <Project>{1968162c-0793-491d-91a1-81645a24d399}</Project>
+    </ProjectReference>
   </ItemGroup>
 </Project>

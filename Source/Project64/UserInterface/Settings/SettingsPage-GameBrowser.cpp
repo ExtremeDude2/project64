@@ -13,8 +13,8 @@
 #include "SettingsPage.h"
 
 COptionsGameBrowserPage::COptionsGameBrowserPage(HWND hParent, const RECT & rcDispay) :
-m_OrderChanged(false),
-m_OrderReset(false)
+    m_OrderChanged(false),
+    m_OrderReset(false)
 {
     if (!Create(hParent, rcDispay))
     {
@@ -25,6 +25,7 @@ m_OrderReset(false)
     SetDlgItemTextW(m_hWnd, IDC_ROMSEL_TEXT4, wGS(RB_DIRS).c_str());
     SetDlgItemTextW(m_hWnd, IDC_USE_ROMBROWSER, wGS(RB_USE).c_str());
     SetDlgItemTextW(m_hWnd, IDC_RECURSION, wGS(RB_DIR_RECURSION).c_str());
+    SetDlgItemTextW(m_hWnd, IDC_SHOW_FILE_EXTENSIONS, wGS(RB_FILEEXT).c_str());
     SetDlgItemTextW(m_hWnd, IDC_ROMSEL_TEXT5, wGS(RB_AVALIABLE_FIELDS).c_str());
     SetDlgItemTextW(m_hWnd, IDC_ROMSEL_TEXT6, wGS(RB_SHOW_FIELDS).c_str());
     SetDlgItemTextW(m_hWnd, IDC_ADD, wGS(RB_ADD).c_str());
@@ -33,7 +34,8 @@ m_OrderReset(false)
     SetDlgItemTextW(m_hWnd, IDC_DOWN, wGS(RB_DOWN).c_str());
 
     AddModCheckBox(GetDlgItem(IDC_USE_ROMBROWSER), RomBrowser_Enabled);
-    AddModCheckBox(GetDlgItem(IDC_RECURSION), RomBrowser_Recursive);
+    AddModCheckBox(GetDlgItem(IDC_RECURSION), RomList_GameDirRecursive);
+    AddModCheckBox(GetDlgItem(IDC_SHOW_FILE_EXTENSIONS), RomList_ShowFileExtensions);
 
     m_Avaliable.Attach(GetDlgItem(IDC_AVALIABLE));
     m_Using.Attach(GetDlgItem(IDC_USING));
@@ -231,7 +233,7 @@ void COptionsGameBrowserPage::ApplySettings(bool UpdateScreen)
     }
     if (bColChanged)
     {
-        g_Settings->SaveBool(RomBrowser_ColoumnsChanged, !g_Settings->LoadBool(RomBrowser_ColoumnsChanged));
+        UISettingsSaveBool(RomBrowser_ColoumnsChanged, !UISettingsLoadBool(RomBrowser_ColoumnsChanged));
     }
 
     CSettingsPageImpl<COptionsGameBrowserPage>::ApplySettings(UpdateScreen);

@@ -15,6 +15,7 @@
 #include <Project64-core/N64System/Mips/SystemTiming.h>
 #include <Project64-core/N64System/Interpreter/InterpreterCPU.h>
 #include <Project64-core/Logging.h>
+#include <Project64-core/Debugger.h>
 
 bool DelaySlotEffectsCompare(uint32_t PC, uint32_t Reg1, uint32_t Reg2);
 
@@ -154,13 +155,13 @@ R4300iOp32::Func * R4300iOp32::BuildInterpreter()
     Jump_Special[45] = R4300iOp::SPECIAL_DADDU;
     Jump_Special[46] = R4300iOp::SPECIAL_DSUB;
     Jump_Special[47] = R4300iOp::SPECIAL_DSUBU;
-    Jump_Special[48] = R4300iOp::UnknownOpcode;
-    Jump_Special[49] = R4300iOp::UnknownOpcode;
-    Jump_Special[50] = R4300iOp::UnknownOpcode;
-    Jump_Special[51] = R4300iOp::UnknownOpcode;
+    Jump_Special[48] = R4300iOp::SPECIAL_TGE;
+    Jump_Special[49] = R4300iOp::SPECIAL_TGEU;
+    Jump_Special[50] = R4300iOp::SPECIAL_TLT;
+    Jump_Special[51] = R4300iOp::SPECIAL_TLTU;
     Jump_Special[52] = R4300iOp::SPECIAL_TEQ;
     Jump_Special[53] = R4300iOp::UnknownOpcode;
-    Jump_Special[54] = R4300iOp::UnknownOpcode;
+    Jump_Special[54] = R4300iOp::SPECIAL_TNE;
     Jump_Special[55] = R4300iOp::UnknownOpcode;
     Jump_Special[56] = R4300iOp::SPECIAL_DSLL;
     Jump_Special[57] = R4300iOp::UnknownOpcode;
@@ -179,13 +180,13 @@ R4300iOp32::Func * R4300iOp32::BuildInterpreter()
     Jump_Regimm[5] = R4300iOp::UnknownOpcode;
     Jump_Regimm[6] = R4300iOp::UnknownOpcode;
     Jump_Regimm[7] = R4300iOp::UnknownOpcode;
-    Jump_Regimm[8] = R4300iOp::UnknownOpcode;
-    Jump_Regimm[9] = R4300iOp::UnknownOpcode;
-    Jump_Regimm[10] = R4300iOp::UnknownOpcode;
-    Jump_Regimm[11] = R4300iOp::UnknownOpcode;
-    Jump_Regimm[12] = R4300iOp::UnknownOpcode;
+    Jump_Regimm[8] = R4300iOp::REGIMM_TGEI;
+    Jump_Regimm[9] = R4300iOp::REGIMM_TGEIU;
+    Jump_Regimm[10] = R4300iOp::REGIMM_TLTI;
+    Jump_Regimm[11] = R4300iOp::REGIMM_TLTIU;
+    Jump_Regimm[12] = R4300iOp::REGIMM_TEQI;
     Jump_Regimm[13] = R4300iOp::UnknownOpcode;
-    Jump_Regimm[14] = R4300iOp::UnknownOpcode;
+    Jump_Regimm[14] = R4300iOp::REGIMM_TNEI;
     Jump_Regimm[15] = R4300iOp::UnknownOpcode;
     Jump_Regimm[16] = REGIMM_BLTZAL;
     Jump_Regimm[17] = REGIMM_BGEZAL;
@@ -376,13 +377,13 @@ R4300iOp32::Func * R4300iOp32::BuildInterpreter()
     Jump_CoP1_S[5] = R4300iOp::COP1_S_ABS;
     Jump_CoP1_S[6] = R4300iOp::COP1_S_MOV;
     Jump_CoP1_S[7] = R4300iOp::COP1_S_NEG;
-    Jump_CoP1_S[8] = R4300iOp::UnknownOpcode;
+    Jump_CoP1_S[8] = R4300iOp::COP1_S_ROUND_L;
     Jump_CoP1_S[9] = R4300iOp::COP1_S_TRUNC_L;
-    Jump_CoP1_S[10] = R4300iOp::COP1_S_CEIL_L;		//added by Witten
-    Jump_CoP1_S[11] = R4300iOp::COP1_S_FLOOR_L;		//added by Witten
+    Jump_CoP1_S[10] = R4300iOp::COP1_S_CEIL_L;
+    Jump_CoP1_S[11] = R4300iOp::COP1_S_FLOOR_L;
     Jump_CoP1_S[12] = R4300iOp::COP1_S_ROUND_W;
     Jump_CoP1_S[13] = R4300iOp::COP1_S_TRUNC_W;
-    Jump_CoP1_S[14] = R4300iOp::COP1_S_CEIL_W;		//added by Witten
+    Jump_CoP1_S[14] = R4300iOp::COP1_S_CEIL_W;
     Jump_CoP1_S[15] = R4300iOp::COP1_S_FLOOR_W;
     Jump_CoP1_S[16] = R4300iOp::UnknownOpcode;
     Jump_CoP1_S[17] = R4300iOp::UnknownOpcode;
@@ -441,14 +442,14 @@ R4300iOp32::Func * R4300iOp32::BuildInterpreter()
     Jump_CoP1_D[5] = R4300iOp::COP1_D_ABS;
     Jump_CoP1_D[6] = R4300iOp::COP1_D_MOV;
     Jump_CoP1_D[7] = R4300iOp::COP1_D_NEG;
-    Jump_CoP1_D[8] = R4300iOp::UnknownOpcode;
-    Jump_CoP1_D[9] = R4300iOp::COP1_D_TRUNC_L;		//added by Witten
-    Jump_CoP1_D[10] = R4300iOp::COP1_D_CEIL_L;		//added by Witten
-    Jump_CoP1_D[11] = R4300iOp::COP1_D_FLOOR_L;		//added by Witten
+    Jump_CoP1_D[8] = R4300iOp::COP1_D_ROUND_L;
+    Jump_CoP1_D[9] = R4300iOp::COP1_D_TRUNC_L;
+    Jump_CoP1_D[10] = R4300iOp::COP1_D_CEIL_L;
+    Jump_CoP1_D[11] = R4300iOp::COP1_D_FLOOR_L;
     Jump_CoP1_D[12] = R4300iOp::COP1_D_ROUND_W;
     Jump_CoP1_D[13] = R4300iOp::COP1_D_TRUNC_W;
-    Jump_CoP1_D[14] = R4300iOp::COP1_D_CEIL_W;		//added by Witten
-    Jump_CoP1_D[15] = R4300iOp::COP1_D_FLOOR_W;		//added by Witten
+    Jump_CoP1_D[14] = R4300iOp::COP1_D_CEIL_W;
+    Jump_CoP1_D[15] = R4300iOp::COP1_D_FLOOR_W;
     Jump_CoP1_D[16] = R4300iOp::UnknownOpcode;
     Jump_CoP1_D[17] = R4300iOp::UnknownOpcode;
     Jump_CoP1_D[18] = R4300iOp::UnknownOpcode;
@@ -891,6 +892,10 @@ void R4300iOp32::BGTZL()
 void R4300iOp32::LB()
 {
     uint32_t Address = _GPR[m_Opcode.base].UW[0] + (int16_t)m_Opcode.offset;
+    if (HaveReadBP() && g_Debugger->ReadBP8(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (!g_MMU->LB_VAddr(Address, _GPR[m_Opcode.rt].UB[0]))
     {
         if (bShowTLBMisses())
@@ -911,6 +916,10 @@ void R4300iOp32::LH()
     if ((Address & 1) != 0)
     {
         ADDRESS_ERROR_EXCEPTION(Address, true);
+    }
+    if (HaveReadBP() && g_Debugger->ReadBP16(Address) && MemoryBreakpoint())
+    {
+        return;
     }
     if (!g_MMU->LH_VAddr(Address, _GPR[m_Opcode.rt].UHW[0]))
     {
@@ -933,6 +942,10 @@ void R4300iOp32::LWL()
     Address = _GPR[m_Opcode.base].UW[0] + (int16_t)m_Opcode.offset;
     Offset = Address & 3;
 
+    if (HaveReadBP() && g_Debugger->ReadBP32(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (!g_MMU->LW_VAddr((Address & ~3), Value))
     {
         if (bShowTLBMisses())
@@ -953,6 +966,10 @@ void R4300iOp32::LW()
     if ((Address & 3) != 0)
     {
         ADDRESS_ERROR_EXCEPTION(Address, true);
+    }
+    if (HaveReadBP() && g_Debugger->ReadBP32(Address) && MemoryBreakpoint())
+    {
+        return;
     }
 
     if (GenerateLog())
@@ -977,6 +994,10 @@ void R4300iOp32::LW()
 void R4300iOp32::LBU()
 {
     uint32_t Address = _GPR[m_Opcode.base].UW[0] + (int16_t)m_Opcode.offset;
+    if (HaveReadBP() && g_Debugger->ReadBP8(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (!g_MMU->LB_VAddr(Address, _GPR[m_Opcode.rt].UB[0]))
     {
         if (bShowTLBMisses())
@@ -998,6 +1019,10 @@ void R4300iOp32::LHU()
     {
         ADDRESS_ERROR_EXCEPTION(Address, true);
     }
+    if (HaveReadBP() && g_Debugger->ReadBP16(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (!g_MMU->LH_VAddr(Address, _GPR[m_Opcode.rt].UHW[0]))
     {
         if (bShowTLBMisses())
@@ -1018,7 +1043,10 @@ void R4300iOp32::LWR()
 
     Address = _GPR[m_Opcode.base].UW[0] + (int16_t)m_Opcode.offset;
     Offset = Address & 3;
-
+    if (HaveReadBP() && g_Debugger->ReadBP32(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (!g_MMU->LW_VAddr((Address & ~3), Value))
     {
         g_Notify->BreakPoint(__FILE__, __LINE__);
@@ -1041,6 +1069,10 @@ void R4300iOp32::LWU()
         ADDRESS_ERROR_EXCEPTION(Address, true);
     }
 
+    if (HaveReadBP() && g_Debugger->ReadBP32(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (!g_MMU->LW_VAddr(Address, _GPR[m_Opcode.rt].UW[0]))
     {
         if (bShowTLBMisses())
@@ -1062,7 +1094,10 @@ void R4300iOp32::LL()
     {
         ADDRESS_ERROR_EXCEPTION(Address, true);
     }
-
+    if (HaveReadBP() && g_Debugger->ReadBP32(Address) && MemoryBreakpoint())
+    {
+        return;
+    }
     if (!g_MMU->LW_VAddr(Address, _GPR[m_Opcode.rt].UW[0]))
     {
         if (bShowTLBMisses())
@@ -1184,20 +1219,10 @@ void R4300iOp32::SPECIAL_SLTU()
 
 void R4300iOp32::SPECIAL_TEQ()
 {
-    if (_GPR[m_Opcode.rs].W[0] == _GPR[m_Opcode.rt].W[0] && g_Settings->LoadBool(Debugger_Enabled))
+    if (_GPR[m_Opcode.rs].W[0] == _GPR[m_Opcode.rt].W[0] && CDebugSettings::HaveDebugger())
     {
         g_Notify->DisplayError("Should trap this ???");
     }
-}
-
-void R4300iOp32::SPECIAL_DSRL32()
-{
-    _GPR[m_Opcode.rd].UW[0] = (uint32_t)(_GPR[m_Opcode.rt].UDW >> (m_Opcode.sa + 32));
-}
-
-void R4300iOp32::SPECIAL_DSRA32()
-{
-    _GPR[m_Opcode.rd].W[0] = (int32_t)(_GPR[m_Opcode.rt].DW >> (m_Opcode.sa + 32));
 }
 
 /********************** R4300i OpCodes: RegImm **********************/
@@ -1312,6 +1337,18 @@ void R4300iOp32::REGIMM_BGEZAL()
         m_JumpToLocation = (*_PROGRAM_COUNTER) + ((int16_t)m_Opcode.offset << 2) + 4;
         if ((*_PROGRAM_COUNTER) == m_JumpToLocation)
         {
+            if (CDebugSettings::HaveDebugger())
+            {
+                if (g_Reg->m_PROGRAM_COUNTER < 0x80000400)
+                {
+                    // Break out of possible checksum halt
+                    g_Notify->DisplayMessage(5, "Broke out of permanent loop! Invalid checksum?");
+                    m_JumpToLocation = (*_PROGRAM_COUNTER) + 8;
+                    _GPR[31].DW = (int32_t)((*_PROGRAM_COUNTER) + 8);
+                    R4300iOp::m_NextInstruction = DELAY_SLOT;
+                    return;
+                }
+            }
             if (!DelaySlotEffectsCompare((*_PROGRAM_COUNTER), m_Opcode.rs, 0))
             {
                 CInterpreterCPU::InPermLoop();
@@ -1395,7 +1432,7 @@ void R4300iOp32::COP0_MT()
         {
             _CP0[m_Opcode.rd] = _GPR[m_Opcode.rt].UW[0];
         }
-        if ((_CP0[m_Opcode.rd] & 0x18) != 0 && g_Settings->LoadBool(Debugger_Enabled))
+        if ((_CP0[m_Opcode.rd] & 0x18) != 0 && CDebugSettings::HaveDebugger())
         {
             g_Notify->DisplayError("Left kernel mode ??");
         }
@@ -1403,7 +1440,7 @@ void R4300iOp32::COP0_MT()
         break;
     case 13: //cause
         _CP0[m_Opcode.rd] &= 0xFFFFCFF;
-        if ((_GPR[m_Opcode.rt].UW[0] & 0x300) != 0 && g_Settings->LoadBool(Debugger_Enabled))
+        if ((_GPR[m_Opcode.rt].UW[0] & 0x300) != 0 && CDebugSettings::HaveDebugger())
         {
             g_Notify->DisplayError("Set IP0 or IP1");
         }
@@ -1425,7 +1462,7 @@ void R4300iOp32::COP1_CF()
     TEST_COP1_USABLE_EXCEPTION
         if (m_Opcode.fs != 31 && m_Opcode.fs != 0)
         {
-            if (g_Settings->LoadBool(Debugger_Enabled)) { g_Notify->DisplayError("CFC1 what register are you writing to ?"); }
+            if (CDebugSettings::HaveDebugger()) { g_Notify->DisplayError("CFC1 what register are you writing to ?"); }
             return;
         }
     _GPR[m_Opcode.rt].W[0] = (int32_t)_FPCR[m_Opcode.fs];
